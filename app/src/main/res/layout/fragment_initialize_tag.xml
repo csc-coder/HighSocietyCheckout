@@ -30,7 +30,7 @@
         android:visibility="gone"
         app:layout_constraintTop_toBottomOf="@id/textViewInstructions"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_width_end_margin_toEndBottom_Of="8ref_ofwocation_indexesedsedtextalignofberightororlandothe"
+        app:layout_constraintEnd_toEndOf="parent"
         android:gravity="center"
         android:layout_marginTop="24dp"/>
 
