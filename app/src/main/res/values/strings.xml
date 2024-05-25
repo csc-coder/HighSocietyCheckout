@@ -11,5 +11,14 @@
     <string name="date_of_birth">Geburtsort</string>
     <string name="personal_id_hint">Ausweisnummer</string>
     <string name="_1g">1g</string>
+    <string name="scan_to_harvest">Scan to harvest</string>
+    <string name="place_tag">Place your tag on the back of the device to start initialization.</string>
+    <string name="initializing">Initializing...</string>
+    <string name="nfc_is_not_supported_on_this_device">NFC is not supported on this device.</string>
+    <string name="nfc_is_not_enabled">NFC is not enabled.</string>
+    <string name="scan_nfc_tag">Scan NFC Tag</string>
+    <string name="ndef_message">"NDEF Message: "</string>
+    <string name="nfc_tag_discovered">NFC Tag Discovered!</string>
+    <string name="error">"Error: "</string>
 
 </resources>

@@ -12,7 +12,7 @@
         android:id="@+id/textview_instruction"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Scan to harvest"
+        android:text="@string/scan_to_harvest"
         android:textSize="24sp"
         android:textColor="#D4AF37"
         app:layout_constraintTop_toTopOf="parent"

@@ -36,10 +36,10 @@ public class FragmentScan extends Fragment {
     private void setupNfcHandling() {
         // Check if NFC is supported and enabled
         if (!nfcHandler.isNfcSupported()) {
-            binding.textViewStatus.setText("NFC is not supported on this device.");
+            binding.textViewStatus.setText(R.string.nfc_is_not_supported_on_this_device);
             binding.textViewStatus.setVisibility(View.VISIBLE);
         } else if (!nfcHandler.isNfcEnabled()) {
-            binding.textViewStatus.setText("NFC is not enabled.");
+            binding.textViewStatus.setText(R.string.nfc_is_not_enabled);
             binding.textViewStatus.setVisibility(View.VISIBLE);
         }
     }
@@ -51,7 +51,7 @@ public class FragmentScan extends Fragment {
         AppCompatActivity activity = (AppCompatActivity) getActivity();
         if (activity != null) {
             nfcHandler.enableForegroundDispatch(activity);
-            activity.getSupportActionBar().setTitle("Scan NFC Tag");
+            activity.getSupportActionBar().setTitle(R.string.scan_nfc_tag);
         }
     }
 
@@ -70,19 +70,19 @@ public class FragmentScan extends Fragment {
         nfcHandler.handleIntent(intent, new NFCHandler.NfcIntentHandler() {
             @Override
             public void onNdefMessageRead(ArrayList<String> records) {
-                binding.textViewStatus.setText("NDEF Message: " + records.toString());
+                binding.textViewStatus.setText(getString(R.string.ndef_message) + records.toString());
                 binding.textViewStatus.setVisibility(View.VISIBLE);
             }
 
             @Override
             public void onTagDiscovered(Tag tag) {
-                binding.textViewStatus.setText("NFC Tag Discovered!");
+                binding.textViewStatus.setText(R.string.nfc_tag_discovered);
                 binding.textViewStatus.setVisibility(View.VISIBLE);
             }
 
             @Override
             public void onTagError(String errorMessage) {
-                binding.textViewStatus.setText("Error: " + errorMessage);
+                binding.textViewStatus.setText(getString(R.string.error) + errorMessage);
                 binding.textViewStatus.setVisibility(View.VISIBLE);
             }
         });
