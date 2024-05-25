@@ -8,18 +8,16 @@ import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.nfc.tech.Ndef;
-import android.nfc.tech.NdefFormatable;
 import android.util.Log;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Locale;
 
 public class NFCHandler {
-    private NfcAdapter nfcAdapter;
-    private Context context;
+    private final NfcAdapter nfcAdapter;
+    private final Context context;
 
     public NFCHandler(Context context) {
         this.context = context;
@@ -40,7 +38,7 @@ public class NFCHandler {
                 NfcAdapter.ACTION_TAG_DISCOVERED.equals(action) ||
                 NfcAdapter.ACTION_TECH_DISCOVERED.equals(action)) {
 
-            Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+            Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG, Tag.class);
             if (tag != null) {
                 try {
                     if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action)) {
