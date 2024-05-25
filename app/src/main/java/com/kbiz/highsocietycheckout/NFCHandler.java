@@ -1,5 +1,6 @@
 package com.kbiz.highsocietycheckout;
 
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.nfc.FormatException;
@@ -9,6 +10,8 @@ import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.util.Log;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -32,13 +35,27 @@ public class NFCHandler {
         return nfcAdapter != null;
     }
 
+    public boolean isNfcEnabled() {
+        return nfcAdapter != null && nfcAdapter.isEnabled();
+    }
+
+    public void enableForegroundDispatch(AppCompatActivity activity) {
+        Intent intent = new Intent(activity, activity.getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        PendingIntent pendingIntent = PendingIntent.getActivity(activity, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        nfcAdapter.enableForegroundDispatch(activity, pendingIntent, null, null);
+    }
+
+    public void disableForegroundDispatch(AppCompatActivity activity) {
+        nfcAdapter.disableForegroundDispatch(activity);
+    }
+
     public void handleIntent(Intent intent, NfcIntentHandler handler) {
         String action = intent.getAction();
         if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action) ||
                 NfcAdapter.ACTION_TAG_DISCOVERED.equals(action) ||
                 NfcAdapter.ACTION_TECH_DISCOVERED.equals(action)) {
 
-            Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG, Tag.class);
+            Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
             if (tag != null) {
                 try {
                     if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action)) {
