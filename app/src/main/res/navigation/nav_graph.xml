@@ -3,26 +3,99 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/FirstFragment">
+    app:startDestination="@id/fragmentScan">
 
+    <!-- Scan Fragment -->
     <fragment
-        android:id="@+id/FirstFragment"
-        android:name="com.kbiz.highsocietycheckout.FirstFragment"
-        android:label="@string/first_fragment_label"
-        tools:layout="@layout/fragment_first">
-
+        android:id="@+id/fragmentScan"
+        android:name="com.kbiz.highsocietycheckout.FragmentScan"
+        android:label="fragment_scan"
+        tools:layout="@layout/fragment_scan">
         <action
-            android:id="@+id/action_FirstFragment_to_SecondFragment"
-            app:destination="@id/SecondFragment" />
+            android:id="@+id/action_fragmentScan_to_fragmentRegister"
+            app:destination="@id/fragmentRegister" />
+        <action
+            android:id="@+id/action_fragmentScan_to_fragmentHarvest"
+            app:destination="@id/fragmentHarvest" />
+        <action
+            android:id="@+id/action_fragmentScan_to_fragmentUnregister"
+            app:destination="@id/fragmentUnregister" />
     </fragment>
+
+    <!-- Register Fragment -->
     <fragment
-        android:id="@+id/SecondFragment"
-        android:name="com.kbiz.highsocietycheckout.SecondFragment"
-        android:label="@string/second_fragment_label"
-        tools:layout="@layout/fragment_second">
-
+        android:id="@+id/fragmentRegister"
+        android:name="com.kbiz.highsocietycheckout.FragmentRegister"
+        android:label="fragment_register"
+        tools:layout="@layout/fragment_register">
         <action
-            android:id="@+id/action_SecondFragment_to_FirstFragment"
-            app:destination="@id/FirstFragment" />
+            android:id="@+id/action_fragmentRegister_to_fragmentInitializeTag"
+            app:destination="@id/fragmentInitializeTag" />
+        <action
+            android:id="@+id/action_fragmentRegister_to_fragmentConfirm"
+            app:destination="@id/fragmentConfirm" />
+        <action
+            android:id="@+id/action_fragmentRegister_to_fragmentError"
+            app:destination="@id/fragmentError" />
     </fragment>
+
+    <!-- Initialize Tag Fragment -->
+    <fragment
+        android:id="@+id/fragmentInitializeTag"
+        android:name="com.kbiz.highsocietycheckout.FragmentInitializeTag"
+        android:label="fragment_initialize_tag"
+        tools:layout="@layout/fragment_initialize_tag">
+        <action
+            android:id="@+id/action_fragmentInitializeTag_to_fragmentConfirm"
+            app:destination="@id/fragmentConfirm" />
+        <action
+            android:id="@+id/action_fragmentInitializeTag_to_fragmentError"
+            app:destination="@id/fragmentError" />
+        <action
+            android:id="@+id/action_fragmentInitializeTag_to_fragmentHarvest"
+            app:destination="@id/fragmentHarvest" />
+    </fragment>
+
+    <!-- Harvest Fragment -->
+    <fragment
+        android:id="@+id/fragmentHarvest"
+        android:name="com.kbiz.highsocietycheckout.FragmentHarvest"
+        android:label="fragment_harvest"
+        tools:layout="@layout/fragment_harvest">
+        <action
+            android:id="@+id/action_fragmentHarvest_to_fragmentConfirm"
+            app:destination="@id/fragmentConfirm" />
+        <action
+            android:id="@+id/action_fragmentHarvest_to_fragmentError"
+            app:destination="@id/fragmentError" />
+    </fragment>
+
+    <!-- Unregister Fragment -->
+    <fragment
+        android:id="@+id/fragmentUnregister"
+        android:name="com.kbiz.highsocietycheckout.FragmentUnregister"
+        android:label="fragment_unregister"
+        tools:layout="@layout/fragment_unregister">
+        <action
+            android:id="@+id/action_fragmentUnregister_to_fragmentConfirm"
+            app:destination="@id/fragmentConfirm" />
+        <action
+            android:id="@+id/action_fragmentUnregister_to_fragmentError"
+            app:destination="@id/fragmentError" />
+    </fragment>
+
+    <!-- Confirm Fragment -->
+    <fragment
+        android:id="@+id/fragmentConfirm"
+        android:name="com.kbiz.highsocietycheckout.FragmentConfirm"
+        android:label="fragment_confirm"
+        tools:layout="@layout/fragment_confirm" />
+
+    <!-- Error Fragment -->
+    <fragment
+        android:id="@+id/fragmentError"
+        android:name="com.kbiz.highsocietycheckout.FragmentError"
+        android:label="fragment_error"
+        tools:layout="@layout/fragment_error" />
+
 </navigation>
