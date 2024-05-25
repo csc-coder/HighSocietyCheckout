@@ -4,11 +4,6 @@
     <!-- Strings used for fragments for navigation -->
     <string name="nav_lbl_fragment_scan">Scan Fragment</string>
     <string name="nav_lbl_fragment_register">Register Fragment</string>
-    <string name="nav_lbl_fragment_"> Fragment</string>
-    <string name="nav_lbl_fragment_"> Fragment</string>
-    <string name="nav_lbl_fragment_"> Fragment</string>
-    <string name="nav_lbl_fragment_"> Fragment</string>
-    <string name="nav_lbl_fragment_"> Fragment</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
 

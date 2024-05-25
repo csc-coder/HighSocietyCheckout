@@ -84,18 +84,4 @@
             app:destination="@id/fragmentError" />
     </fragment>
 
-    <!-- Confirm Fragment -->
-    <fragment
-        android:id="@+id/fragmentConfirm"
-        android:name="com.kbiz.highsocietycheckout.FragmentConfirm"
-        android:label="fragment_confirm"
-        tools:layout="@layout/fragment_confirm" />
-
-    <!-- Error Fragment -->
-    <fragment
-        android:id="@+id/fragmentError"
-        android:name="com.kbiz.highsocietycheckout.FragmentError"
-        android:label="fragment_error"
-        tools:layout="@layout/fragment_error" />
-
 </navigation>
