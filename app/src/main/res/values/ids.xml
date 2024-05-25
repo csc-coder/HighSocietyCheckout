@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Fragment IDs -->
+    <item name="fragmentScan" type="id"/>
+    <item name="fragmentRegister" type="id"/>
+    <item name="fragmentInitializeTag" type="id"/>
+    <item name="fragmentHarvest" type="id"/>
+    <item name="fragmentUnregister" type="id"/>
+    <item name="fragmentConfirm" type="id"/>
+    <item name="fragmentError" type="id"/>
+
+    <!-- Action IDs -->
+    <item name="action_fragmentScan_to_fragmentRegister" type="id"/>
+    <item name="action_fragmentScan_to_fragmentHarvest" type="id"/>
+    <item name="action_fragmentScan_to_fragmentUnregister" type="id"/>
+    <item name="action_fragmentRegister_to_fragmentInitializeTag" type="id"/>
+    <item name="action_fragmentRegister_to_fragmentConfirm" type="id"/>
+    <item name="action_fragmentRegister_to_fragmentError" type="id"/>
+    <item name="action_fragmentInitializeTag_to_fragmentConfirm" type="id"/>
+    <item name="action_fragmentInitializeTag_to_fragmentError" type="id"/>
+    <item name="action_fragmentHarvest_to_fragmentConfirm" type="id"/>
+    <item name="action_fragmentHarvest_to_fragmentError" type="id"/>
+    <item name="action_fragmentUnregister_to_fragmentConfirm" type="id"/>
+    <item name="action_fragmentUnregister_to_fragmentError" type="id"/>
+</resources>
