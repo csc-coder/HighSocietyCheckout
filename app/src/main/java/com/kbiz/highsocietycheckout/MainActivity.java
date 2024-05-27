@@ -1,7 +1,9 @@
 package com.kbiz.highsocietycheckout;
 
 import android.content.Intent;
+import android.nfc.NfcAdapter;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -57,10 +59,29 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        // Pass the intent to the fragment
-        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment_content_main);
-        if (fragment instanceof FragmentScan) {
-            ((FragmentScan) fragment).handleNfcIntent(intent);
+
+        // Log the intent action and extras for debugging
+        Log.d("LOK", "Received intent with action: " + intent.getAction());
+        Bundle extras = intent.getExtras();
+        if (extras != null) {
+            for (String key : extras.keySet()) {
+                Object value = extras.get(key);
+                Log.d("LOK", String.format("Extra: %s - Value: %s", key, value));
+            }
+        }
+
+        Log.d("LOK", "Intent details: " + intent.toString());
+        // Check if the intent is an NFC intent
+        if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(intent.getAction()) ||
+                NfcAdapter.ACTION_TAG_DISCOVERED.equals(intent.getAction()) ||
+                NfcAdapter.ACTION_TECH_DISCOVERED.equals(intent.getAction())) {
+
+            // Pass the intent to the fragment
+            Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment_content_main);
+            if (fragment instanceof FragmentScan) {
+                ((FragmentScan) fragment).handleNfcIntent(intent);
+            }
         }
     }
+
 }

@@ -1,13 +1,16 @@
 package com.kbiz.highsocietycheckout;
 
 import android.content.Intent;
+import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
@@ -53,6 +56,7 @@ public class FragmentScan extends Fragment {
             nfcHandler.enableForegroundDispatch(activity);
             activity.getSupportActionBar().setTitle(R.string.scan_nfc_tag);
         }
+        checkNfcEnabled();
     }
 
     @Override
@@ -64,6 +68,24 @@ public class FragmentScan extends Fragment {
             nfcHandler.disableForegroundDispatch(activity);
         }
     }
+    public void checkNfcEnabled() {
+        NfcAdapter nfcAdapter=nfcHandler.getNfcAdapter();
+        if (nfcAdapter != null && !nfcAdapter.isEnabled()) {
+            // NFC is not enabled. Show a dialog to the user to enable NFC
+            new AlertDialog.Builder(this.getContext())
+                    .setTitle("NFC is disabled")
+                    .setMessage("Please enable NFC to use this feature.")
+                    .setPositiveButton("Settings", (dialog, which) -> {
+                        Intent intent = new Intent(Settings.ACTION_NFC_SETTINGS);
+                        startActivity(intent);
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
+        } else {
+            binding.textViewStatus.setVisibility(View.VISIBLE);
+            binding.textViewStatus.setText("NFC is active");
+        }
+    }
 
     public void handleNfcIntent(Intent intent) {
         // Handle new intent with NFC data
@@ -71,19 +93,16 @@ public class FragmentScan extends Fragment {
             @Override
             public void onNdefMessageRead(ArrayList<String> records) {
                 binding.textViewStatus.setText(getString(R.string.ndef_message) + records.toString());
-                binding.textViewStatus.setVisibility(View.VISIBLE);
             }
 
             @Override
             public void onTagDiscovered(Tag tag) {
                 binding.textViewStatus.setText(R.string.nfc_tag_discovered);
-                binding.textViewStatus.setVisibility(View.VISIBLE);
             }
 
             @Override
             public void onTagError(String errorMessage) {
                 binding.textViewStatus.setText(getString(R.string.error) + errorMessage);
-                binding.textViewStatus.setVisibility(View.VISIBLE);
             }
         });
     }
