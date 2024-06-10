@@ -263,7 +263,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback {
         if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action) ||
                 NfcAdapter.ACTION_TAG_DISCOVERED.equals(action) ||
                 NfcAdapter.ACTION_TECH_DISCOVERED.equals(action)) {
-            Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+            Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG, Tag.class);
             if (tag != null) {
                 onTagDiscovered(tag);
             } else {
