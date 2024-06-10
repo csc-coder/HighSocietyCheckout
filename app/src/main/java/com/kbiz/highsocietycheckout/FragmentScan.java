@@ -38,6 +38,37 @@ public class FragmentScan extends Fragment {
     }
 
     private void setupNfcHandling() {
+        nfcHandler = new NFCHandler(getContext());
+
+        // Set the intent handler
+        nfcHandler.setIntentHandler(new NFCHandler.NfcIntentHandler() {
+            @Override
+            public void onNdefMessageRead(ArrayList<String> records) {
+                // Handle tag scan result and navigate accordingly
+                if (records.isEmpty()) {
+                    // Navigate to registration
+                    NavHostFragment.findNavController(FragmentScan.this).navigate(R.id.action_fragmentScan_to_fragmentRegister);
+                } else {
+                    // Navigate to harvest
+                    NavHostFragment.findNavController(FragmentScan.this).navigate(R.id.action_fragmentScan_to_fragmentHarvest);
+                }
+            }
+
+            @Override
+            public void onTagDiscovered(Tag tag) {
+                // Handle raw tag scan
+                binding.textViewStatus.setVisibility(View.VISIBLE);
+                binding.textViewStatus.setText("Tag discovered");
+            }
+
+            @Override
+            public void onTagError(String errorMessage) {
+                // Handle error
+                binding.textViewStatus.setVisibility(View.VISIBLE);
+                binding.textViewStatus.setText("Tag error: " + errorMessage);
+            }
+        });
+
         // Check if NFC is supported and enabled
         if (!nfcHandler.isNfcSupported()) {
             binding.textViewStatus.setText(R.string.nfc_is_not_supported_on_this_device);
@@ -91,33 +122,7 @@ public class FragmentScan extends Fragment {
 
     public void handleNfcIntent(Intent intent) {
         // Handle new intent with NFC data
-        nfcHandler.handleIntent(intent, new NFCHandler.NfcIntentHandler() {
-            @Override
-            public void onNdefMessageRead(ArrayList<String> records) {
-                // Handle tag scan result and navigate accordingly
-                if (records.isEmpty()) {
-                    // Navigate to registration
-                    NavHostFragment.findNavController(FragmentScan.this).navigate(R.id.action_fragmentScan_to_fragmentRegister);
-                } else {
-                    // Navigate to harvest
-                    NavHostFragment.findNavController(FragmentScan.this).navigate(R.id.action_fragmentScan_to_fragmentHarvest);
-                }
-            }
-
-            @Override
-            public void onTagDiscovered(Tag tag) {
-                // Handle raw tag scan
-                binding.textViewStatus.setVisibility(View.VISIBLE);
-                binding.textViewStatus.setText("Tag discovered");
-            }
-
-            @Override
-            public void onTagError(String errorMessage) {
-                // Handle error
-                binding.textViewStatus.setVisibility(View.VISIBLE);
-                binding.textViewStatus.setText("Tag error");
-            }
-        });
+        nfcHandler.handleIntent(intent);
     }
 
     @Override
