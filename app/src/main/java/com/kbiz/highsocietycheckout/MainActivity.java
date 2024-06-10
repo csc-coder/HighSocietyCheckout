@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -21,6 +22,7 @@ import androidx.navigation.ui.NavigationUI;
 import com.kbiz.highsocietycheckout.databinding.ActivityMainBinding;
 
 public class MainActivity extends AppCompatActivity {
+    private StatusViewModel statusViewModel;
 
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
@@ -33,6 +35,14 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         setSupportActionBar(binding.toolbar);
+
+
+        statusViewModel = new ViewModelProvider(this).get(StatusViewModel.class);
+
+        // Load the status bar fragment
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.status_bar_container, new FragmentStatusBar())
+                .commit();
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.NFC) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.NFC}, NFCHandler.REQUEST_CODE_NFC);
@@ -91,4 +101,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void updateStatus(String status) {
+        statusViewModel.setStatusText(status);
+    }
 }

@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.kbiz.highsocietycheckout.databinding.FragmentScanBinding;
@@ -23,11 +24,13 @@ public class FragmentScan extends Fragment {
 
     private FragmentScanBinding binding;
     private NFCHandler nfcHandler;
+    private StatusViewModel statusViewModel;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentScanBinding.inflate(inflater, container, false);
         nfcHandler = new NFCHandler(getContext());
+        statusViewModel = new ViewModelProvider(requireActivity()).get(StatusViewModel.class);
         return binding.getRoot();
     }
 
@@ -57,25 +60,32 @@ public class FragmentScan extends Fragment {
             @Override
             public void onTagDiscovered(Tag tag) {
                 // Handle raw tag scan
-                binding.textViewStatus.setVisibility(View.VISIBLE);
-                binding.textViewStatus.setText("Tag discovered");
+//                binding.textViewStatus.setVisibility(View.VISIBLE);
+//                binding.textViewStatus.setText("Tag discovered");
+                statusViewModel.setStatusText("Tag discovered");
+
             }
 
             @Override
             public void onTagError(String errorMessage) {
                 // Handle error
-                binding.textViewStatus.setVisibility(View.VISIBLE);
-                binding.textViewStatus.setText("Tag error: " + errorMessage);
+//                binding.textViewStatus.setVisibility(View.VISIBLE);
+//                binding.textViewStatus.setText("Tag error: " + errorMessage);
+
+                statusViewModel.setStatusText("Tag error: "+errorMessage);
             }
         });
 
         // Check if NFC is supported and enabled
         if (!nfcHandler.isNfcSupported()) {
-            binding.textViewStatus.setText(R.string.nfc_is_not_supported_on_this_device);
-            binding.textViewStatus.setVisibility(View.VISIBLE);
+//            binding.textViewStatus.setText(getContext().getResources().getText(R.string.nfc_is_not_supported_on_this_device));
+//            binding.textViewStatus.setVisibility(View.VISIBLE);
+            statusViewModel.setStatusText((String) getContext().getResources().getText(R.string.nfc_is_not_supported_on_this_device));
         } else if (!nfcHandler.isNfcEnabled()) {
-            binding.textViewStatus.setText(R.string.nfc_is_not_enabled);
-            binding.textViewStatus.setVisibility(View.VISIBLE);
+//            binding.textViewStatus.setText(R.string.nfc_is_not_enabled);
+//            binding.textViewStatus.setVisibility(View.VISIBLE);
+            statusViewModel.setStatusText((String) getContext().getResources().getText(R.string.nfc_is_not_enabled));
+
         }
     }
 
@@ -115,8 +125,9 @@ public class FragmentScan extends Fragment {
                     .setNegativeButton("Cancel", null)
                     .show();
         } else {
-            binding.textViewStatus.setVisibility(View.VISIBLE);
-            binding.textViewStatus.setText("NFC is active");
+//            binding.textViewStatus.setVisibility(View.VISIBLE);
+//            binding.textViewStatus.setText("NFC is active");
+            statusViewModel.setStatusText("NFC is active");
         }
     }
 

@@ -1,0 +1,16 @@
+<!-- fragment_status_bar.xml -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:background="@color/colorPrimary"
+    android:padding="8dp">
+
+    <TextView
+        android:id="@+id/status_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Status: OK"
+        android:textColor="@android:color/white" />
+
+</LinearLayout>
