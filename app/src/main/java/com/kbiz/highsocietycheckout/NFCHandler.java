@@ -29,15 +29,16 @@ import java.util.Locale;
 public class NFCHandler implements NfcAdapter.ReaderCallback {
     public static final int REQUEST_CODE_NFC = 1;
     public static final int NFC_PERMISSION_CODE = 1;
-
     private static final String TAG = "NFCHandler";
     private final NfcAdapter nfcAdapter;
     private final Context context;
     private NfcIntentHandler intentHandler;
+    private StatusViewModel statusViewModel;
 
-    public NFCHandler(Context context) {
+    public NFCHandler(Context context, StatusViewModel statusViewModel) {
         this.context = context;
         nfcAdapter = NfcAdapter.getDefaultAdapter(context);
+        this.statusViewModel=statusViewModel;
         if (nfcAdapter == null) {
             Log.e(TAG, "NFC is not supported on this device.");
         }
@@ -55,10 +56,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback {
         if (nfcAdapter != null) {
             Bundle options = new Bundle();
             options.putInt(NfcAdapter.EXTRA_READER_PRESENCE_CHECK_DELAY, 250);
-            nfcAdapter.enableReaderMode(activity, this,
-                    NfcAdapter.FLAG_READER_NFC_A | NfcAdapter.FLAG_READER_NFC_B |
-                            NfcAdapter.FLAG_READER_NFC_F | NfcAdapter.FLAG_READER_NFC_V |
-                            NfcAdapter.FLAG_READER_NO_PLATFORM_SOUNDS, options);
+            nfcAdapter.enableReaderMode(activity, this, NfcAdapter.FLAG_READER_NFC_A | NfcAdapter.FLAG_READER_NFC_B | NfcAdapter.FLAG_READER_NFC_F | NfcAdapter.FLAG_READER_NFC_V | NfcAdapter.FLAG_READER_NO_PLATFORM_SOUNDS, options);
         }
     }
 
@@ -82,44 +80,36 @@ public class NFCHandler implements NfcAdapter.ReaderCallback {
     public void disableForegroundDispatch(AppCompatActivity activity) {
         nfcAdapter.disableForegroundDispatch(activity);
     }
+
     @Override
     public void onTagDiscovered(Tag tag) {
-        if (intentHandler != null) {
-            try {
-                Ndef ndef = Ndef.get(tag);
-                if (ndef != null) {
-                    processNdefMessage(ndef, intentHandler);
-                } else {
-                    intentHandler.onTagDiscovered(tag);
-                }
-            } catch (IOException | FormatException e) {
-                intentHandler.onTagError("Error processing tag: " + e.getMessage());
-            }
-        }
-    }
-
-    private void processNdefMessage(Ndef ndef, NfcIntentHandler handler) throws IOException, FormatException {
-        ndef.connect();
-        NdefMessage ndefMessage = ndef.getNdefMessage();
-        if (ndefMessage == null) {
-            handler.onTagError("No NDEF message found on tag.");
+        if (intentHandler == null) {
             return;
         }
-        ArrayList<String> records = extractTextRecordsFromNdefMessage(ndefMessage);
-        handler.onNdefMessageRead(records);
-        ndef.close();
+        Ndef ndef = Ndef.get(tag);
+        if (ndef != null) {
+            intentHandler.onNDefNotNull(tag);
+        } else {
+            intentHandler.onTagDiscovered(tag);
+        }
     }
 
-    private ArrayList<String> extractTextRecordsFromNdefMessage(NdefMessage message) {
+
+    public ArrayList<String> extractTextRecordsFromNdefMessage(NdefMessage message) {
+        if (message == null) {
+            Log.e(TAG, "Error parsing NDEF record. Message == null.");
+        }
         ArrayList<String> records = new ArrayList<>();
         for (NdefRecord record : message.getRecords()) {
-            if (record.getTnf() == NdefRecord.TNF_WELL_KNOWN &&
-                    Arrays.equals(record.getType(), NdefRecord.RTD_TEXT)) {
-                try {
-                    records.add(new String(record.getPayload(), Charset.forName("UTF-8")));
-                } catch (Exception e) {
-                    Log.e(TAG, "Error parsing NDEF record.", e);
-                }
+            if (record.getTnf() != NdefRecord.TNF_WELL_KNOWN || !Arrays.equals(record.getType(), NdefRecord.RTD_TEXT)) {
+                continue;
+            }
+
+            try {
+                records.add(new String(record.getPayload(), Charset.forName("UTF-8")));
+            } catch (Exception e) {
+                Log.e(TAG, "Error parsing NDEF record. ["+record.getPayload()+"]", e);
+                statusViewModel.setStatusText("Error parsing NDEF record: " + e.getMessage());
             }
         }
         return records;
@@ -155,7 +145,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback {
         }
     }
 
-    public static String formatTagNDEF(Tag tag) throws IOException, FormatException {
+    public String formatTagNDEF(Tag tag) throws IOException, FormatException {
         NdefFormatable ndefFormatable = NdefFormatable.get(tag);
         String result = "OK";
         if (ndefFormatable == null) {
@@ -184,7 +174,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback {
         return result;
     }
 
-    private static NdefRecord createHashRecord() {
+    private NdefRecord createHashRecord() {
         try {
             String payload = createHash();
             byte[] languageCode = Locale.getDefault().getLanguage().getBytes("US-ASCII");
@@ -199,7 +189,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback {
         }
     }
 
-    private static String createHash() {
+    private String createHash() {
         return "fancyHashh189rh183rhj";
     }
 
@@ -212,14 +202,16 @@ public class NFCHandler implements NfcAdapter.ReaderCallback {
     }
 
     public interface NfcIntentHandler {
-        void onNdefMessageRead(ArrayList<String> records);
+        void onNDefNotNull(Tag tag);
+
         void onTagDiscovered(Tag tag);
+
         void onTagError(String errorMessage);
     }
 
     // New methods to handle reading and formatting tags
     public NdefMessage createNdefMessage(String text) {
-        NdefRecord[] records = { createTextRecord(text) };
+        NdefRecord[] records = {createTextRecord(text)};
         return new NdefMessage(records);
     }
 
@@ -260,9 +252,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback {
 
     public void handleIntent(Intent intent) {
         String action = intent.getAction();
-        if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action) ||
-                NfcAdapter.ACTION_TAG_DISCOVERED.equals(action) ||
-                NfcAdapter.ACTION_TECH_DISCOVERED.equals(action)) {
+        if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action) || NfcAdapter.ACTION_TAG_DISCOVERED.equals(action) || NfcAdapter.ACTION_TECH_DISCOVERED.equals(action)) {
             Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG, Tag.class);
             if (tag != null) {
                 onTagDiscovered(tag);

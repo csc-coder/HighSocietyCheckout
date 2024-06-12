@@ -1,10 +1,14 @@
 package com.kbiz.highsocietycheckout;
 
 import android.content.Intent;
+import android.nfc.FormatException;
+import android.nfc.NdefMessage;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
+import android.nfc.tech.Ndef;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,8 +20,11 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 
+import com.kbiz.highsocietycheckout.data.TagContent;
 import com.kbiz.highsocietycheckout.databinding.FragmentScanBinding;
+import com.kbiz.highsocietycheckout.lookup.Lookup;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class FragmentScan extends Fragment {
@@ -29,7 +36,6 @@ public class FragmentScan extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentScanBinding.inflate(inflater, container, false);
-        nfcHandler = new NFCHandler(getContext());
         statusViewModel = new ViewModelProvider(requireActivity()).get(StatusViewModel.class);
         return binding.getRoot();
     }
@@ -41,62 +47,79 @@ public class FragmentScan extends Fragment {
     }
 
     private void setupNfcHandling() {
-        nfcHandler = new NFCHandler(getContext());
-
         // Set the intent handler
+        nfcHandler = new NFCHandler(getContext(), statusViewModel);
         nfcHandler.setIntentHandler(new NFCHandler.NfcIntentHandler() {
             @Override
-            public void onNdefMessageRead(ArrayList<String> records) {
-                // Handle tag scan result and navigate accordingly
-                if (records.isEmpty()) {
-                    // Navigate to registration
-                    NavHostFragment.findNavController(FragmentScan.this).navigate(R.id.action_fragmentScan_to_fragmentRegister);
-                } else {
-                    // Navigate to harvest
-                    NavHostFragment.findNavController(FragmentScan.this).navigate(R.id.action_fragmentScan_to_fragmentHarvest);
+            public void onNDefNotNull(Tag tag) {
+                try {
+                    Ndef ndef = Ndef.get(tag);
+                    if (ndef == null) {
+                        onTagError("cant init ndef on this tag");
+                        throw new RuntimeException("cant init ndef on this tag");
+                    }
+                    ndef.connect();
+                    NdefMessage ndefMessage = ndef.getNdefMessage();
+
+                    //store tag data in global storage
+                    TagContent tagContent = Lookup.get(TagContent.class);
+                    tagContent.setnDefRecords(nfcHandler.extractTextRecordsFromNdefMessage(ndefMessage));
+
+                    // Handle tag scan result and navigate accordingly
+                    if (ndefMessage == null || tagContent.isEmpty()) {
+                        // Navigate to registration
+                        NavHostFragment.findNavController(FragmentScan.this).navigate(R.id.action_fragmentScan_to_fragmentRegister);
+                    } else {
+                        // Navigate to harvest
+                        NavHostFragment.findNavController(FragmentScan.this).navigate(R.id.action_fragmentScan_to_fragmentHarvest);
+                    }
+                    ndef.close();
+                } catch (IOException | FormatException e) {
+                    Log.e("LOK", e.getMessage(), e);
+                    onTagError("Error processing tag: " + e.getMessage());
                 }
             }
 
             @Override
             public void onTagDiscovered(Tag tag) {
-                // Handle raw tag scan
-//                binding.textViewStatus.setVisibility(View.VISIBLE);
-//                binding.textViewStatus.setText("Tag discovered");
                 statusViewModel.setStatusText("Tag discovered");
-
+                if(Lookup.get(TagContent.class).isEmpty()){
+                    //register
+                    NavHostFragment.findNavController(FragmentScan.this).navigate(R.id.action_fragmentScan_to_fragmentRegister);
+                }
+                else{
+                    processTagData();
+                }
             }
 
             @Override
             public void onTagError(String errorMessage) {
-                // Handle error
-//                binding.textViewStatus.setVisibility(View.VISIBLE);
-//                binding.textViewStatus.setText("Tag error: " + errorMessage);
-
-                statusViewModel.setStatusText("Tag error: "+errorMessage);
+                statusViewModel.setStatusText("Error: " + errorMessage);
             }
         });
 
         // Check if NFC is supported and enabled
         if (!nfcHandler.isNfcSupported()) {
-//            binding.textViewStatus.setText(getContext().getResources().getText(R.string.nfc_is_not_supported_on_this_device));
-//            binding.textViewStatus.setVisibility(View.VISIBLE);
             statusViewModel.setStatusText((String) getContext().getResources().getText(R.string.nfc_is_not_supported_on_this_device));
         } else if (!nfcHandler.isNfcEnabled()) {
-//            binding.textViewStatus.setText(R.string.nfc_is_not_enabled);
-//            binding.textViewStatus.setVisibility(View.VISIBLE);
             statusViewModel.setStatusText((String) getContext().getResources().getText(R.string.nfc_is_not_enabled));
-
+        } else {
+            statusViewModel.setStatusText((String) getContext().getResources().getText(R.string.nfc_is_enabled));
         }
+    }
+
+    private void processTagData() {
+        ArrayList<String> records = Lookup.get(TagContent.class).getnDefRecords();
+
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        // Setup foreground dispatch to capture NFC tags when the fragment is visible
         if (nfcHandler.isNfcSupported() && nfcHandler.isNfcEnabled()) {
             nfcHandler.enableReaderMode((AppCompatActivity) getActivity());
         } else {
-            // Show NFC not supported or enabled message
+            statusViewModel.setStatusText((String) getContext().getResources().getText(R.string.nfc_is_not_supported_on_this_device));
         }
         checkNfcEnabled();
     }
@@ -125,8 +148,6 @@ public class FragmentScan extends Fragment {
                     .setNegativeButton("Cancel", null)
                     .show();
         } else {
-//            binding.textViewStatus.setVisibility(View.VISIBLE);
-//            binding.textViewStatus.setText("NFC is active");
             statusViewModel.setStatusText("NFC is active");
         }
     }
