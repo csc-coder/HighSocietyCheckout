@@ -37,6 +37,7 @@ public class FragmentScan extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentScanBinding.inflate(inflater, container, false);
         statusViewModel = new ViewModelProvider(requireActivity()).get(StatusViewModel.class);
+
         return binding.getRoot();
     }
 
@@ -83,11 +84,12 @@ public class FragmentScan extends Fragment {
             @Override
             public void onTagDiscovered(Tag tag) {
                 statusViewModel.setStatusText("Tag discovered");
-                if(Lookup.get(TagContent.class).isEmpty()){
+                if (Lookup.get(TagContent.class).isEmpty()) {
                     //register
-                    NavHostFragment.findNavController(FragmentScan.this).navigate(R.id.action_fragmentScan_to_fragmentRegister);
-                }
-                else{
+//                    Lookup.get(MainActivity.class).runOnMainThread(() -> {
+                        NavHostFragment.findNavController(FragmentScan.this).navigate(R.id.action_fragmentScan_to_fragmentRegister);
+//                    });
+                } else {
                     processTagData();
                 }
             }

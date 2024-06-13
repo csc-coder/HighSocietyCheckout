@@ -19,6 +19,6 @@ public class TagContent {
     }
 
     public boolean isEmpty() {
-        return this.nDefRecords !=null && this.nDefRecords.isEmpty();
+        return this.nDefRecords ==null || this.nDefRecords.isEmpty();
     }
 }

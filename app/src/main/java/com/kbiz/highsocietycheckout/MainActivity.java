@@ -20,6 +20,7 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.kbiz.highsocietycheckout.databinding.ActivityMainBinding;
+import com.kbiz.highsocietycheckout.lookup.Lookup;
 
 public class MainActivity extends AppCompatActivity {
     private StatusViewModel statusViewModel;
@@ -50,6 +51,8 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
+
+        Lookup.add(this);
     }
 
     @Override
@@ -101,6 +104,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void runOnMainThread(Runnable action) {
+        runOnUiThread(action);
+    }
     public void updateStatus(String status) {
         statusViewModel.setStatusText(status);
     }
