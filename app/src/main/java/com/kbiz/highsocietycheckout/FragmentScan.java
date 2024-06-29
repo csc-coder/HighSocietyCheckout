@@ -7,6 +7,7 @@ import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -32,6 +33,8 @@ public class FragmentScan extends Fragment {
     private FragmentScanBinding binding;
     private NFCHandler nfcHandler;
     private StatusViewModel statusViewModel;
+    private boolean nfcReadingActive;
+
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -52,7 +55,7 @@ public class FragmentScan extends Fragment {
         nfcHandler = new NFCHandler(getContext(), statusViewModel);
         nfcHandler.setIntentHandler(new NFCHandler.NfcIntentHandler() {
             @Override
-            public void onNDefNotNull(Tag tag) {
+            public void onNDEFDiscovered(Tag tag) {
                 try {
                     Ndef ndef = Ndef.get(tag);
                     if (ndef == null) {
@@ -66,6 +69,8 @@ public class FragmentScan extends Fragment {
                     TagContent tagContent = Lookup.get(TagContent.class);
                     tagContent.setnDefRecords(nfcHandler.extractTextRecordsFromNdefMessage(ndefMessage));
 
+                    AppCompatActivity activity = (AppCompatActivity) getActivity();
+                    nfcHandler.disableReaderMode(activity);
                     // Handle tag scan result and navigate accordingly
                     if (ndefMessage == null || tagContent.isEmpty()) {
                         // Navigate to registration
@@ -83,15 +88,20 @@ public class FragmentScan extends Fragment {
 
             @Override
             public void onTagDiscovered(Tag tag) {
-                statusViewModel.setStatusText("Tag discovered");
+                statusViewModel.setStatusText("Empty Tag discovered");
+
                 if (Lookup.get(TagContent.class).isEmpty()) {
-                    //register
-//                    Lookup.get(MainActivity.class).runOnMainThread(() -> {
+                    Lookup.get(MainActivity.class).runOnMainThread(() -> {
                         NavHostFragment.findNavController(FragmentScan.this).navigate(R.id.action_fragmentScan_to_fragmentRegister);
-//                    });
+                    });
                 } else {
                     processTagData();
                 }
+            }
+
+            @Override
+            public void onTagRemoved(Tag tag) {
+
             }
 
             @Override
@@ -119,7 +129,8 @@ public class FragmentScan extends Fragment {
     public void onResume() {
         super.onResume();
         if (nfcHandler.isNfcSupported() && nfcHandler.isNfcEnabled()) {
-            nfcHandler.enableReaderMode((AppCompatActivity) getActivity());
+            AppCompatActivity activity = (AppCompatActivity) getActivity();
+            nfcHandler.enableReaderMode(activity);
         } else {
             statusViewModel.setStatusText((String) getContext().getResources().getText(R.string.nfc_is_not_supported_on_this_device));
         }
@@ -129,11 +140,6 @@ public class FragmentScan extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        // Disable foreground dispatch when the fragment is not visible
-        AppCompatActivity activity = (AppCompatActivity) getActivity();
-        if (activity != null) {
-            nfcHandler.disableReaderMode(activity);
-        }
     }
 
     public void checkNfcEnabled() {

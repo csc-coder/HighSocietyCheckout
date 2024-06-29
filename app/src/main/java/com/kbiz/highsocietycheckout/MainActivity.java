@@ -54,7 +54,11 @@ public class MainActivity extends AppCompatActivity {
 
         Lookup.add(this);
     }
-
+    @Override
+    public void onBackPressed() {
+        // Handle back navigation here
+        super.onBackPressed();
+    }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
@@ -90,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        Log.d("LOK", "Intent details: " + intent.toString());
+        Log.d("LOK", "Intent details: " + intent);
         // Check if the intent is an NFC intent
         if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(intent.getAction()) ||
                 NfcAdapter.ACTION_TAG_DISCOVERED.equals(intent.getAction()) ||

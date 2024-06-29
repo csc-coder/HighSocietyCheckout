@@ -16,7 +16,7 @@
         android:layout_marginTop="32dp"
         android:background="@drawable/edittext_background"
         android:hint="@string/personal_id_hint"
-        android:inputType="number"
+        android:inputType="text"
         android:padding="16dp"
         android:textColor="#b3ff99"
         android:textColorHint="#d4af37"
@@ -25,8 +25,6 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <!-- Place of Birth Input -->
-
-    <!-- Date of Birth Input -->
 
     <EditText
         android:id="@+id/editTextPlaceOfBirth"
@@ -53,7 +51,7 @@
         android:clickable="true"
         android:focusable="false"
         android:hint="@string/date_of_birth"
-        android:inputType="date"
+        android:inputType="text"
         android:padding="16dp"
         android:textColor="#b3ff99"
         android:textColorHint="#d4af37"
@@ -75,6 +73,8 @@
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/editTextDateOfBirth" />
+        app:layout_constraintTop_toBottomOf="@id/editTextDateOfBirth"
+        app:layout_constraintVertical_bias="0.015" />
 </androidx.constraintlayout.widget.ConstraintLayout>
