@@ -15,4 +15,8 @@ public class StatusViewModel extends ViewModel {
     public LiveData<String> getStatusText() {
         return statusText;
     }
+    public void clear() {
+        statusText.postValue("");
+    }
+
 }

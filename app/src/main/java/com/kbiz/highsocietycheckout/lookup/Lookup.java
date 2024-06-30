@@ -16,10 +16,19 @@ import java.util.List;
  * @author kdot
  */
 public class Lookup {
-    private static HashMap<Class<?>, ArrayList<?>> contents;
+    private static final HashMap<Class<?>, ArrayList<?>> contents;
 
     static{
         contents = new HashMap<>();
+    }
+
+    /**
+     * adds the toAdd object but under a different class key than its own
+     * @param toAdd object to add
+     * @param clazzOverride override key u can use to fetch this class for
+     */
+    public static void add(Object toAdd, Class<?> clazzOverride){
+        //TODO implement
     }
 
     public static void add(Object toAdd){

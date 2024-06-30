@@ -1,5 +1,7 @@
 package com.kbiz.highsocietycheckout;
 
+import static java.security.AccessController.getContext;
+
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.nfc.NfcAdapter;
@@ -28,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
 
+    private NFCHandler nfcHandler;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,6 +54,9 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
+
+        nfcHandler = new NFCHandler(this, statusViewModel);
+        Lookup.add(nfcHandler);
 
         Lookup.add(this);
     }

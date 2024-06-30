@@ -8,8 +8,11 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.fragment.NavHostFragment;
 
 import com.kbiz.highsocietycheckout.databinding.FragmentRegisterBinding;
+import com.kbiz.highsocietycheckout.lookup.Lookup;
 
 public class FragmentRegister extends Fragment {
 
@@ -22,6 +25,7 @@ public class FragmentRegister extends Fragment {
     ) {
         // Inflate the layout for this fragment using view binding
         binding = FragmentRegisterBinding.inflate(inflater, container, false);
+
         return binding.getRoot();
     }
 
@@ -41,13 +45,26 @@ public class FragmentRegister extends Fragment {
 
     // Method to handle the logic when the OK button is pressed
     private void onOkPressed() {
-        // You can add your registration logic here
-        // For demonstration, showing a toast message
-        Toast.makeText(getContext(), "OK button pressed. Implement registration logic here.", Toast.LENGTH_SHORT).show();
+        String id=binding.editTextPersonalID.getText().toString();
+        if(id.isEmpty()){
+            id="SHNDJBN929";
+        }
 
-        // Example of navigating to another fragment if needed
-        // NavHostFragment.findNavController(FragmentRegister.this)
-        //        .navigate(R.id.action_fragmentRegister_to_nextFragment);
+        String dob=binding.editTextDateOfBirth.getText().toString();
+        if(dob.isEmpty()){
+            dob="1970-01-01";
+        }
+
+        String pob=binding.editTextPlaceOfBirth.getText().toString();
+        if(pob.isEmpty()){
+            pob="bad-saarow-pieskow";
+        }
+
+        Toast.makeText(getContext(), "Thx! ("+dob+","+pob+","+id+") please attach tag again.", Toast.LENGTH_SHORT).show();
+
+        Lookup.get(MainActivity.class).runOnMainThread(() -> {
+            NavHostFragment.findNavController(FragmentRegister.this).navigate(R.id.action_fragmentRegister_to_fragmentInitializeTag);
+        });
     }
 
     @Override

@@ -13,8 +13,10 @@ import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.nfc.tech.NdefFormatable;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -39,7 +41,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
     private final StatusViewModel statusViewModel;
 
     public NFCHandler(Context context, StatusViewModel statusViewModel) {
-        this.context = context;
+        this.context = context.getApplicationContext();
         nfcAdapter = NfcAdapter.getDefaultAdapter(context);
         this.statusViewModel = statusViewModel;
         if (nfcAdapter == null) {
@@ -74,6 +76,21 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
             return;
         }
         nfcAdapter.disableReaderMode(activity);
+    }
+
+
+    public void enableForegroundDispatch(AppCompatActivity activity) {
+        Intent intent = new Intent(activity, activity.getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        PendingIntent pendingIntent = PendingIntent.getActivity(activity, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
+        if (ContextCompat.checkSelfPermission(this.context, android.Manifest.permission.NFC) != PackageManager.PERMISSION_GRANTED) {
+            // Request NFC permission
+            ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.NFC}, NFC_PERMISSION_CODE);
+        }
+        nfcAdapter.enableForegroundDispatch(activity, pendingIntent, null, null);
+    }
+
+    public void disableForegroundDispatch(AppCompatActivity activity) {
+        nfcAdapter.disableForegroundDispatch(activity);
     }
 
     @Override
@@ -269,6 +286,13 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
         } else {
             intentHandler.onTagError("Unsupported NFC action: " + action);
         }
+    }
 
+    public void showNFCEnablementStatusTexts() {
+        if (nfcAdapter != null && !nfcAdapter.isEnabled()) {
+            statusViewModel.setStatusText("NFC is DISABLED! Please activate");
+        } else {
+            statusViewModel.setStatusText("NFC is active. We're good to go.");
+        }
     }
 }
