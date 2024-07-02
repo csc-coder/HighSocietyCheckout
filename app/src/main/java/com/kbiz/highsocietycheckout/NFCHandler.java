@@ -47,14 +47,26 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
         if (nfcAdapter == null) {
             Log.e(TAG, "NFC is not supported on this device.");
         }
+        setNFCStatusText();
+        //override nfchandler with a new one to enable clear override of intenthandler code
+        Lookup.put(this);
     }
-
     public boolean isNfcSupported() {
         return nfcAdapter != null;
     }
 
     public boolean isNfcEnabled() {
         return nfcAdapter != null && nfcAdapter.isEnabled();
+    }
+
+    private void setNFCStatusText() {
+        if (!isNfcSupported()) {
+            statusViewModel.setStatusText(context.getResources().getString(R.string.nfc_is_not_supported_on_this_device));
+        } else if (!isNfcEnabled()) {
+            statusViewModel.setStatusText(context.getResources().getString(R.string.nfc_is_not_enabled));
+        } else {
+            statusViewModel.setStatusText(context.getResources().getString(R.string.nfc_is_enabled));
+        }
     }
 
     public void enableReaderMode(AppCompatActivity activity) {

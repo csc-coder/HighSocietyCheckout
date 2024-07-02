@@ -8,6 +8,7 @@ package com.kbiz.highsocietycheckout.lookup;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -29,6 +30,32 @@ public class Lookup {
      */
     public static void add(Object toAdd, Class<?> clazzOverride){
         //TODO implement
+    }
+
+    /**
+     * put will override the list with one element
+     * @param toPut object we put in
+     */
+    public static void put(Object toPut){
+        Class<?> clazz = toPut.getClass();
+        //add to classes list for direct class
+        ArrayList clazzContainer = ensureEmptyEntryContainer(clazz);
+
+        clazzContainer.add(toPut);
+        //add to superclass container
+        Class<?>[] ifces = toPut.getClass().getInterfaces();
+        for(Class<?> ifce:ifces){
+            clazzContainer = ensureEmptyEntryContainer(ifce);
+            clazzContainer.clear();
+            clazzContainer.add(toPut);
+        }
+        Class<?> superClass = toPut.getClass().getSuperclass();
+        while(superClass != Object.class){
+            clazzContainer = ensureEmptyEntryContainer(superClass);
+
+            clazzContainer.add(toPut);
+            superClass = superClass.getSuperclass();
+        }
     }
 
     public static void add(Object toAdd){
@@ -84,6 +111,12 @@ public class Lookup {
             return null;
         }
         return (List<T>) objects;
+    }
+
+    private static <T> ArrayList<?> ensureEmptyEntryContainer(Class<T> clazz) {
+        ArrayList<?> container = ensureEntryContainer(clazz);
+        container.clear();
+        return container;
     }
 
     private static <T> ArrayList<?> ensureEntryContainer(Class<T> clazz) {

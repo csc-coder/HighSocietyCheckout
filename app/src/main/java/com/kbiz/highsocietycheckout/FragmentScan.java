@@ -3,7 +3,6 @@ package com.kbiz.highsocietycheckout;
 import android.content.Intent;
 import android.nfc.FormatException;
 import android.nfc.NdefMessage;
-import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.os.Bundle;
@@ -23,7 +22,6 @@ import com.kbiz.highsocietycheckout.databinding.FragmentScanBinding;
 import com.kbiz.highsocietycheckout.lookup.Lookup;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 public class FragmentScan extends Fragment {
 
@@ -35,13 +33,14 @@ public class FragmentScan extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentScanBinding.inflate(inflater, container, false);
         statusViewModel = new ViewModelProvider(requireActivity()).get(StatusViewModel.class);
+        nfcHandler = new NFCHandler(this.getContext(), statusViewModel);
         return binding.getRoot();
     }
 
     @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        setupNfcHandling();
+
         nfcHandler.setIntentHandler(new NFCHandler.NfcIntentHandler() {
             @Override
             public void onNDEFDiscovered(Tag tag) {
@@ -66,18 +65,6 @@ public class FragmentScan extends Fragment {
         });
     }
 
-    private void setupNfcHandling() {
-        nfcHandler = new NFCHandler(getContext(), statusViewModel);
-        Lookup.add(nfcHandler);
-
-        if (!nfcHandler.isNfcSupported()) {
-            statusViewModel.setStatusText(getString(R.string.nfc_is_not_supported_on_this_device));
-        } else if (!nfcHandler.isNfcEnabled()) {
-            statusViewModel.setStatusText(getString(R.string.nfc_is_not_enabled));
-        } else {
-            statusViewModel.setStatusText(getString(R.string.nfc_is_enabled));
-        }
-    }
 
     private void handleNdefDiscovered(Tag tag) {
         try {
