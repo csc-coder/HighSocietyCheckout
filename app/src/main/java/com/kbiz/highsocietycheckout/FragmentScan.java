@@ -23,32 +23,27 @@ import com.kbiz.highsocietycheckout.lookup.Lookup;
 
 import java.io.IOException;
 
-public class FragmentScan extends Fragment {
+public class FragmentScan extends Fragment implements NFCReactor
+{
 
     private FragmentScanBinding binding;
     private NFCHandler nfcHandler;
     private StatusViewModel statusViewModel;
+    private NFCHandler.NfcIntentHandler nfcIntentHandler;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentScanBinding.inflate(inflater, container, false);
         statusViewModel = new ViewModelProvider(requireActivity()).get(StatusViewModel.class);
-        nfcHandler = new NFCHandler(this.getContext(), statusViewModel);
-        return binding.getRoot();
-    }
-
-    @Override
-    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-
-        nfcHandler.setIntentHandler(new NFCHandler.NfcIntentHandler() {
+        nfcHandler = Lookup.get(NFCHandler.class);
+        nfcIntentHandler = new NFCHandler.NfcIntentHandler() {
             @Override
             public void onNDEFDiscovered(Tag tag) {
                 handleNdefDiscovered(tag);
             }
 
             @Override
-            public void onTagDiscovered(Tag tag) {
+            public void onNDEFlessDiscovered(Tag tag) {
                 statusViewModel.setStatusText("Empty Tag discovered");
                 NavHostFragment.findNavController(FragmentScan.this).navigate(R.id.action_fragmentScan_to_fragmentRegister);
             }
@@ -62,7 +57,14 @@ public class FragmentScan extends Fragment {
             public void onTagError(String errorMessage) {
                 statusViewModel.setStatusText("Error: " + errorMessage);
             }
-        });
+        };
+        return binding.getRoot();
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        Lookup.get(MainActivity.class).activeFragment=this;
     }
 
 
@@ -97,6 +99,7 @@ public class FragmentScan extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        Lookup.get(MainActivity.class).activeFragment=this;
         nfcHandler.showNFCEnablementStatusTexts();
         if (nfcHandler.isNfcSupported() && nfcHandler.isNfcEnabled()) {
             AppCompatActivity activity = (AppCompatActivity) getActivity();
@@ -118,7 +121,13 @@ public class FragmentScan extends Fragment {
         binding = null;
     }
 
-    public void handleNfcIntent(Intent intent) {
-        nfcHandler.handleIntent(intent);
+    @Override
+    public void handleNFCIntent(Intent intent) {
+        nfcHandler.handleIntent(intent, nfcIntentHandler);
+    }
+
+    @Override
+    public NFCHandler.NfcIntentHandler getNFCIntentHandler() {
+        return nfcIntentHandler;
     }
 }

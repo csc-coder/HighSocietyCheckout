@@ -1,64 +1,111 @@
 package com.kbiz.highsocietycheckout;
 
+import android.content.Intent;
+import android.nfc.FormatException;
+import android.nfc.NdefMessage;
+import android.nfc.Tag;
+import android.nfc.tech.Ndef;
 import android.os.Bundle;
 
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.fragment.NavHostFragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.kbiz.highsocietycheckout.data.TagContent;
+import com.kbiz.highsocietycheckout.lookup.Lookup;
+
+import java.io.IOException;
+
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link FragmentHarvest#newInstance} factory method to
- * create an instance of this fragment.
  */
-public class FragmentHarvest extends Fragment {
+public class FragmentHarvest extends Fragment implements NFCReactor{
+    private NFCHandler nfcHandler;
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private StatusViewModel statusViewModel;
+    private NFCHandler.NfcIntentHandler nfcIntentHandler;
 
     public FragmentHarvest() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment FragmentHarvest.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static FragmentHarvest newInstance(String param1, String param2) {
-        FragmentHarvest fragment = new FragmentHarvest();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
+        Lookup.get(MainActivity.class).activeFragment=this;
+        nfcHandler = Lookup.get(NFCHandler.class);
+        statusViewModel = new ViewModelProvider(requireActivity()).get(StatusViewModel.class);
+        nfcIntentHandler=new NFCHandler.NfcIntentHandler() {
+            @Override
+            public void onNDEFDiscovered(Tag tag) {
+                handleNdefDiscovered(tag);
+            }
+
+            @Override
+            public void onNDEFlessDiscovered(Tag tag) {
+                statusViewModel.setStatusText("Empty Tag discovered");
+                NavHostFragment.findNavController(FragmentHarvest.this).navigate(R.id.action_fragmentScan_to_fragmentRegister);
+            }
+
+            @Override
+            public void onTagRemoved(Tag tag) {
+                // Handle tag removal if necessary
+                statusViewModel.setStatusText("Tag removed");
+
+            }
+
+            @Override
+            public void onTagError(String errorMessage) {
+                statusViewModel.setStatusText("Error: " + errorMessage);
+            }
+        };
     }
 
+    private void handleNdefDiscovered(Tag tag) {
+        try {
+            Ndef ndef = Ndef.get(tag);
+            if (ndef == null) {
+                throw new RuntimeException("Cannot initialize NDEF on this tag");
+            }
+            ndef.connect();
+            NdefMessage ndefMessage = ndef.getNdefMessage();
+
+            TagContent tagContent = Lookup.get(TagContent.class);
+            tagContent.setnDefRecords(nfcHandler.extractTextRecordsFromNdefMessage(ndefMessage));
+
+            AppCompatActivity activity = (AppCompatActivity) getActivity();
+            nfcHandler.disableReaderMode(activity);
+
+            if (ndefMessage == null || tagContent.isEmpty()) {
+                NavHostFragment.findNavController(this).navigate(R.id.action_fragmentScan_to_fragmentRegister);
+            } else {
+                NavHostFragment.findNavController(this).navigate(R.id.action_fragmentScan_to_fragmentHarvest);
+            }
+
+            ndef.close();
+        } catch (IOException | FormatException e) {
+            Log.e("FragmentScan", "Error processing tag: " + e.getMessage(), e);
+            statusViewModel.setStatusText("Error processing tag: " + e.getMessage());
+        }
+    }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_harvest, container, false);
+    }
+    public void handleNFCIntent(Intent intent) {
+        nfcHandler.handleIntent(intent, nfcIntentHandler);
+    }
+
+    @Override
+    public NFCHandler.NfcIntentHandler getNFCIntentHandler() {
+        return nfcIntentHandler;
     }
 }

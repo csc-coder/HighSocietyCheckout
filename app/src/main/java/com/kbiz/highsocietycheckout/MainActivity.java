@@ -30,17 +30,28 @@ public class MainActivity extends AppCompatActivity {
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
 
+    /**
+     * each fragment must set this on create().
+     * used to route intents from activity to the active {@link NFCReactor} Fragment
+     */
+    public Fragment activeFragment;
+    private NFCHandler nfcHandler;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        statusViewModel = new ViewModelProvider(this).get(StatusViewModel.class);
+        nfcHandler = new NFCHandler(this.getApplicationContext(), statusViewModel);
+
+        AppCompatActivity activity = (AppCompatActivity) this;
+        nfcHandler.enableReaderMode(activity);
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         setSupportActionBar(binding.toolbar);
 
-
-        statusViewModel = new ViewModelProvider(this).get(StatusViewModel.class);
 
         // Load the status bar fragment
         getSupportFragmentManager().beginTransaction()
@@ -54,9 +65,9 @@ public class MainActivity extends AppCompatActivity {
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
 
-
         Lookup.add(this);
     }
+
     @Override
     public void onBackPressed() {
         // Handle back navigation here
@@ -103,10 +114,15 @@ public class MainActivity extends AppCompatActivity {
                 NfcAdapter.ACTION_TAG_DISCOVERED.equals(intent.getAction()) ||
                 NfcAdapter.ACTION_TECH_DISCOVERED.equals(intent.getAction())) {
 
+            Fragment fragment;
             // Pass the intent to the fragment
-            Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment_content_main);
-            if (fragment instanceof FragmentScan) {
-                ((FragmentScan) fragment).handleNfcIntent(intent);
+            if(this.activeFragment==null){
+                fragment = getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment_content_main);
+            } else {
+                fragment=activeFragment;
+            }
+            if (fragment instanceof NFCReactor) {
+                ((NFCReactor) fragment).handleNFCIntent(intent);
             }
         }
     }

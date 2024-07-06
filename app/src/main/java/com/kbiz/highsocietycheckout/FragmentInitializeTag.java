@@ -1,5 +1,6 @@
 package com.kbiz.highsocietycheckout;
 
+import android.content.Intent;
 import android.nfc.FormatException;
 import android.nfc.NdefMessage;
 import android.nfc.Tag;
@@ -24,19 +25,15 @@ import java.io.IOException;
 
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link FragmentInitializeTag#newInstance} factory method to
- * create an instance of this fragment.
  */
-public class FragmentInitializeTag extends Fragment {
+public class FragmentInitializeTag extends Fragment implements NFCReactor {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
 
     // TODO: Rename and change types of parameters
     private NFCHandler nfcHandler;
     private StatusViewModel statusViewModel;
+    private NFCHandler.NfcIntentHandler nfcIntentHandler;
+
 
     public FragmentInitializeTag() {
         // Required empty public constructor
@@ -45,13 +42,39 @@ public class FragmentInitializeTag extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        nfcHandler = new NFCHandler(this.getContext(), statusViewModel);
+
+        Lookup.get(MainActivity.class).activeFragment=this;
+        nfcHandler = Lookup.get(NFCHandler.class);
         statusViewModel = new ViewModelProvider(requireActivity()).get(StatusViewModel.class);
+
+        nfcIntentHandler=new NFCHandler.NfcIntentHandler() {
+            @Override
+            public void onNDEFDiscovered(Tag tag) {
+                handleNdefDiscovered(tag);
+            }
+
+            @Override
+            public void onNDEFlessDiscovered(Tag tag) {
+                statusViewModel.setStatusText("Empty Tag discovered");
+                NavHostFragment.findNavController(FragmentInitializeTag.this).navigate(R.id.action_fragmentScan_to_fragmentRegister);
+            }
+
+            @Override
+            public void onTagRemoved(Tag tag) {
+                // Handle tag removal if necessary
+            }
+
+            @Override
+            public void onTagError(String errorMessage) {
+                statusViewModel.setStatusText("Error: " + errorMessage);
+            }
+        };
     }
 
     @Override
     public void onResume() {
         super.onResume();
+        Lookup.get(MainActivity.class).activeFragment=this;
         if (nfcHandler.isNfcSupported() && nfcHandler.isNfcEnabled()) {
             AppCompatActivity activity = (AppCompatActivity) getActivity();
             nfcHandler.enableForegroundDispatch(activity);
@@ -64,6 +87,7 @@ public class FragmentInitializeTag extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
+        Lookup.get(MainActivity.class).activeFragment=this;
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_initialize_tag, container, false);
     }
@@ -72,6 +96,7 @@ public class FragmentInitializeTag extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        Lookup.get(MainActivity.class).activeFragment=this;
         nfcHandler.setIntentHandler(new NFCHandler.NfcIntentHandler() {
             @Override
             public void onNDEFDiscovered(Tag tag) {
@@ -79,7 +104,7 @@ public class FragmentInitializeTag extends Fragment {
             }
 
             @Override
-            public void onTagDiscovered(Tag tag) {
+            public void onNDEFlessDiscovered(Tag tag) {
                 statusViewModel.setStatusText("Empty Tag discovered");
                 NavHostFragment.findNavController(FragmentInitializeTag.this).navigate(R.id.action_fragmentScan_to_fragmentRegister);
             }
@@ -131,4 +156,11 @@ public class FragmentInitializeTag extends Fragment {
         nfcHandler.disableReaderMode((AppCompatActivity) getActivity());
     }
 
+    public void handleNFCIntent(Intent intent) {
+        nfcHandler.handleIntent(intent, nfcIntentHandler);
+    }
+    @Override
+    public NFCHandler.NfcIntentHandler getNFCIntentHandler() {
+        return nfcIntentHandler;
+    }
 }

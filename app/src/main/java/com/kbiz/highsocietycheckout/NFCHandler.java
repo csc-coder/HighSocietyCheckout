@@ -13,10 +13,8 @@ import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.nfc.tech.NdefFormatable;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.util.Log;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -24,8 +22,6 @@ import androidx.core.content.ContextCompat;
 import com.kbiz.highsocietycheckout.lookup.Lookup;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,8 +44,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
             Log.e(TAG, "NFC is not supported on this device.");
         }
         setNFCStatusText();
-        //override nfchandler with a new one to enable clear override of intenthandler code
-        Lookup.put(this);
+        Lookup.add(this);
     }
     public boolean isNfcSupported() {
         return nfcAdapter != null;
@@ -81,6 +76,8 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
                 NfcAdapter.FLAG_READER_NFC_F |
                 NfcAdapter.FLAG_READER_NFC_V |
                 NfcAdapter.FLAG_READER_NO_PLATFORM_SOUNDS, options);
+        statusViewModel.setStatusText("Enabled reader mode");
+
     }
 
     public void disableReaderMode(AppCompatActivity activity) {
@@ -107,6 +104,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
 
     @Override
     public void onTagDiscovered(Tag tag) {
+        intentHandler=((NFCReactor) Lookup.get(MainActivity.class).activeFragment).getNFCIntentHandler();
         if (intentHandler == null) {
             return;
         }
@@ -114,7 +112,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
         if (ndef != null) {
             intentHandler.onNDEFDiscovered(tag);
         } else {
-            intentHandler.onTagDiscovered(tag);
+            intentHandler.onNDEFlessDiscovered(tag);
         }
     }
 
@@ -228,7 +226,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
     public interface NfcIntentHandler {
         void onNDEFDiscovered(Tag tag);
 
-        void onTagDiscovered(Tag tag);
+        void onNDEFlessDiscovered(Tag tag);
 
         void onTagRemoved(Tag tag);
 
@@ -272,7 +270,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
         return new String(payload, 1, payload.length - 1, StandardCharsets.UTF_8);
     }
 
-    public void handleIntent(Intent intent) {
+    public void handleIntent(Intent intent, NfcIntentHandler nfcIntentHandler) {
         String action = intent.getAction();
         if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action)) {
             Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG, Tag.class);
