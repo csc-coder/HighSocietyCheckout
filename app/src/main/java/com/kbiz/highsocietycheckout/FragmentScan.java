@@ -15,6 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.kbiz.highsocietycheckout.data.TagContent;
@@ -23,8 +24,7 @@ import com.kbiz.highsocietycheckout.lookup.Lookup;
 
 import java.io.IOException;
 
-public class FragmentScan extends Fragment implements NFCReactor
-{
+public class FragmentScan extends Fragment implements NFCReactor {
 
     private FragmentScanBinding binding;
     private NFCHandler nfcHandler;
@@ -36,6 +36,13 @@ public class FragmentScan extends Fragment implements NFCReactor
         binding = FragmentScanBinding.inflate(inflater, container, false);
         statusViewModel = new ViewModelProvider(requireActivity()).get(StatusViewModel.class);
         nfcHandler = Lookup.get(NFCHandler.class);
+
+        if (nfcHandler.isNfcSupported() && nfcHandler.isNfcEnabled()) {
+            nfcHandler.enableReaderMode((AppCompatActivity) getActivity());
+        } else {
+            statusViewModel.setStatusText(getString(R.string.nfc_is_not_supported_on_this_device));
+        }
+
         nfcIntentHandler = new NFCHandler.NfcIntentHandler() {
             @Override
             public void onNDEFDiscovered(Tag tag) {
@@ -44,13 +51,18 @@ public class FragmentScan extends Fragment implements NFCReactor
 
             @Override
             public void onNDEFlessDiscovered(Tag tag) {
-                statusViewModel.setStatusText("Empty Tag discovered");
-                NavHostFragment.findNavController(FragmentScan.this).navigate(R.id.action_fragmentScan_to_fragmentRegister);
+                statusViewModel.setStatusText("Scan:Empty Tag discovered");
+                NavController ctrl = NavHostFragment.findNavController(FragmentScan.this);
+                nfcHandler.disableReaderMode((AppCompatActivity) getActivity());
+                Lookup.get(MainActivity.class).runOnMainThread(() -> {
+                    ctrl.navigate(R.id.action_fragmentScan_to_fragmentRegister);
+                });
             }
 
             @Override
             public void onTagRemoved(Tag tag) {
                 // Handle tag removal if necessary
+                statusViewModel.setStatusText("Tag removed");
             }
 
             @Override
@@ -64,7 +76,6 @@ public class FragmentScan extends Fragment implements NFCReactor
     @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        Lookup.get(MainActivity.class).activeFragment=this;
     }
 
 
@@ -79,9 +90,6 @@ public class FragmentScan extends Fragment implements NFCReactor
 
             TagContent tagContent = Lookup.get(TagContent.class);
             tagContent.setnDefRecords(nfcHandler.extractTextRecordsFromNdefMessage(ndefMessage));
-
-            AppCompatActivity activity = (AppCompatActivity) getActivity();
-            nfcHandler.disableReaderMode(activity);
 
             if (ndefMessage == null || tagContent.isEmpty()) {
                 NavHostFragment.findNavController(this).navigate(R.id.action_fragmentScan_to_fragmentRegister);
@@ -99,20 +107,12 @@ public class FragmentScan extends Fragment implements NFCReactor
     @Override
     public void onResume() {
         super.onResume();
-        Lookup.get(MainActivity.class).activeFragment=this;
         nfcHandler.showNFCEnablementStatusTexts();
-        if (nfcHandler.isNfcSupported() && nfcHandler.isNfcEnabled()) {
-            AppCompatActivity activity = (AppCompatActivity) getActivity();
-            nfcHandler.enableReaderMode(activity);
-        } else {
-            statusViewModel.setStatusText(getString(R.string.nfc_is_not_supported_on_this_device));
-        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        nfcHandler.disableReaderMode((AppCompatActivity) getActivity());
     }
 
     @Override

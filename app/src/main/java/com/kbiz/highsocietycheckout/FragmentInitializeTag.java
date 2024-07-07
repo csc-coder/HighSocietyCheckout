@@ -43,7 +43,6 @@ public class FragmentInitializeTag extends Fragment implements NFCReactor {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Lookup.get(MainActivity.class).activeFragment=this;
         nfcHandler = Lookup.get(NFCHandler.class);
         statusViewModel = new ViewModelProvider(requireActivity()).get(StatusViewModel.class);
 
@@ -55,8 +54,8 @@ public class FragmentInitializeTag extends Fragment implements NFCReactor {
 
             @Override
             public void onNDEFlessDiscovered(Tag tag) {
-                statusViewModel.setStatusText("Empty Tag discovered");
-                NavHostFragment.findNavController(FragmentInitializeTag.this).navigate(R.id.action_fragmentScan_to_fragmentRegister);
+                statusViewModel.setStatusText("InitTag:Empty Tag discovered");
+//                NavHostFragment.findNavController(FragmentInitializeTag.this).navigate(R.id.action_fragmentInitializeTag_to_fragmentConfirm);
             }
 
             @Override
@@ -74,10 +73,9 @@ public class FragmentInitializeTag extends Fragment implements NFCReactor {
     @Override
     public void onResume() {
         super.onResume();
-        Lookup.get(MainActivity.class).activeFragment=this;
         if (nfcHandler.isNfcSupported() && nfcHandler.isNfcEnabled()) {
             AppCompatActivity activity = (AppCompatActivity) getActivity();
-            nfcHandler.enableForegroundDispatch(activity);
+//            nfcHandler.enableForegroundDispatch(activity);
         } else {
             this.statusViewModel.setStatusText((String) getContext().getResources().getText(R.string.nfc_is_not_supported_on_this_device));
         }
@@ -87,7 +85,6 @@ public class FragmentInitializeTag extends Fragment implements NFCReactor {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        Lookup.get(MainActivity.class).activeFragment=this;
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_initialize_tag, container, false);
     }
@@ -96,29 +93,6 @@ public class FragmentInitializeTag extends Fragment implements NFCReactor {
     @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        Lookup.get(MainActivity.class).activeFragment=this;
-        nfcHandler.setIntentHandler(new NFCHandler.NfcIntentHandler() {
-            @Override
-            public void onNDEFDiscovered(Tag tag) {
-                handleNdefDiscovered(tag);
-            }
-
-            @Override
-            public void onNDEFlessDiscovered(Tag tag) {
-                statusViewModel.setStatusText("Empty Tag discovered");
-                NavHostFragment.findNavController(FragmentInitializeTag.this).navigate(R.id.action_fragmentScan_to_fragmentRegister);
-            }
-
-            @Override
-            public void onTagRemoved(Tag tag) {
-                // Handle tag removal if necessary
-            }
-
-            @Override
-            public void onTagError(String errorMessage) {
-                statusViewModel.setStatusText("Error: " + errorMessage);
-            }
-        });
     }
 
     private void handleNdefDiscovered(Tag tag) {
@@ -153,7 +127,6 @@ public class FragmentInitializeTag extends Fragment implements NFCReactor {
     @Override
     public void onPause() {
         super.onPause();
-        nfcHandler.disableReaderMode((AppCompatActivity) getActivity());
     }
 
     public void handleNFCIntent(Intent intent) {

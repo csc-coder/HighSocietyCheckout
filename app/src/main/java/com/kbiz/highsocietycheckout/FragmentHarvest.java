@@ -38,7 +38,6 @@ public class FragmentHarvest extends Fragment implements NFCReactor{
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Lookup.get(MainActivity.class).activeFragment=this;
         nfcHandler = Lookup.get(NFCHandler.class);
         statusViewModel = new ViewModelProvider(requireActivity()).get(StatusViewModel.class);
         nfcIntentHandler=new NFCHandler.NfcIntentHandler() {
@@ -49,8 +48,7 @@ public class FragmentHarvest extends Fragment implements NFCReactor{
 
             @Override
             public void onNDEFlessDiscovered(Tag tag) {
-                statusViewModel.setStatusText("Empty Tag discovered");
-                NavHostFragment.findNavController(FragmentHarvest.this).navigate(R.id.action_fragmentScan_to_fragmentRegister);
+                statusViewModel.setStatusText("Harvst:Empty Tag discovered");
             }
 
             @Override

@@ -18,6 +18,7 @@ import android.util.Log;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.navigation.fragment.NavHostFragment;
 
 import com.kbiz.highsocietycheckout.lookup.Lookup;
 
@@ -77,14 +78,21 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
                 NfcAdapter.FLAG_READER_NFC_V |
                 NfcAdapter.FLAG_READER_NO_PLATFORM_SOUNDS, options);
         statusViewModel.setStatusText("Enabled reader mode");
-
     }
 
     public void disableReaderMode(AppCompatActivity activity) {
-        if (nfcAdapter == null) {
+
+        if (nfcAdapter == null || activity==null) {
             return;
         }
-        nfcAdapter.disableReaderMode(activity);
+        Lookup.get(MainActivity.class).runOnMainThread(() -> {
+            try{
+                nfcAdapter.disableReaderMode(activity);
+                statusViewModel.setStatusText("Disabled reader mode");
+            } catch (Exception e){
+                Log.d("LOK","got exception.", e);
+            }
+        });
     }
 
 
@@ -96,15 +104,18 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
             ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.NFC}, NFC_PERMISSION_CODE);
         }
         nfcAdapter.enableForegroundDispatch(activity, pendingIntent, null, null);
+        statusViewModel.setStatusText("Enabled foreground dispatch");
+
     }
 
     public void disableForegroundDispatch(AppCompatActivity activity) {
         nfcAdapter.disableForegroundDispatch(activity);
+        statusViewModel.setStatusText("Disabled foreground dispatch");
     }
 
     @Override
     public void onTagDiscovered(Tag tag) {
-        intentHandler=((NFCReactor) Lookup.get(MainActivity.class).activeFragment).getNFCIntentHandler();
+        intentHandler=((NFCReactor) Lookup.get(MainActivity.class).getCurrentFragment()).getNFCIntentHandler();
         if (intentHandler == null) {
             return;
         }
@@ -118,7 +129,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
 
     @Override
     public void onTagRemoved() {
-
+        statusViewModel.setStatusText("Tag removed");
     }
 
     public ArrayList<String> extractTextRecordsFromNdefMessage(NdefMessage message) {

@@ -1,7 +1,6 @@
 package com.kbiz.highsocietycheckout;
 
-import static java.security.AccessController.getContext;
-
+import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.nfc.NfcAdapter;
@@ -9,7 +8,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.Manifest;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -18,6 +16,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
@@ -30,11 +29,6 @@ public class MainActivity extends AppCompatActivity {
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
 
-    /**
-     * each fragment must set this on create().
-     * used to route intents from activity to the active {@link NFCReactor} Fragment
-     */
-    public Fragment activeFragment;
     private NFCHandler nfcHandler;
 
     @Override
@@ -44,15 +38,21 @@ public class MainActivity extends AppCompatActivity {
         statusViewModel = new ViewModelProvider(this).get(StatusViewModel.class);
         nfcHandler = new NFCHandler(this.getApplicationContext(), statusViewModel);
 
-        AppCompatActivity activity = (AppCompatActivity) this;
-        nfcHandler.enableReaderMode(activity);
-
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         setSupportActionBar(binding.toolbar);
+        if (savedInstanceState == null) {
 
-
+            NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment_content_main);
+            if (navHostFragment == null) {
+                navHostFragment = NavHostFragment.create(R.navigation.nav_graph);
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.nav_host_fragment_content_main, navHostFragment)
+                        .setPrimaryNavigationFragment(navHostFragment)
+                        .commit();
+            }
+        }
         // Load the status bar fragment
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.status_bar_container, new FragmentStatusBar())
@@ -73,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
         // Handle back navigation here
         super.onBackPressed();
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
@@ -104,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
         if (extras != null) {
             for (String key : extras.keySet()) {
                 Object value = extras.get(key);
-                Log.d("LOK", String.format("Extra: %s - Value: %s", key, value));
+                Log.d("LOK", String.format("intent details: Extra: %s - Value: %s", key, value));
             }
         }
 
@@ -116,10 +117,10 @@ public class MainActivity extends AppCompatActivity {
 
             Fragment fragment;
             // Pass the intent to the fragment
-            if(this.activeFragment==null){
+            if (getCurrentFragment() == null) {
                 fragment = getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment_content_main);
             } else {
-                fragment=activeFragment;
+                fragment = getCurrentFragment();
             }
             if (fragment instanceof NFCReactor) {
                 ((NFCReactor) fragment).handleNFCIntent(intent);
@@ -127,9 +128,20 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public Fragment getCurrentFragment() {
+        NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment_content_main);
+        Fragment currentFragment = navHostFragment.getChildFragmentManager().getFragments().get(0);
+
+        if (navHostFragment != null) {
+            return navHostFragment.getChildFragmentManager().getPrimaryNavigationFragment();
+        }
+        return null;
+    }
+
     public void runOnMainThread(Runnable action) {
         runOnUiThread(action);
     }
+
     public void updateStatus(String status) {
         statusViewModel.setStatusText(status);
     }

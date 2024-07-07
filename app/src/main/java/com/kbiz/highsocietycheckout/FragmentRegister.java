@@ -24,7 +24,7 @@ import com.kbiz.highsocietycheckout.lookup.Lookup;
 
 import java.io.IOException;
 
-public class FragmentRegister extends Fragment implements NFCReactor{
+public class FragmentRegister extends Fragment implements NFCReactor {
 
     private FragmentRegisterBinding binding;
     private NFCHandler nfcHandler;
@@ -41,7 +41,6 @@ public class FragmentRegister extends Fragment implements NFCReactor{
         nfcHandler = Lookup.get(NFCHandler.class);
         statusViewModel = new ViewModelProvider(requireActivity()).get(StatusViewModel.class);
 
-        Lookup.get(MainActivity.class).activeFragment=this;
         return binding.getRoot();
     }
 
@@ -49,7 +48,6 @@ public class FragmentRegister extends Fragment implements NFCReactor{
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        Lookup.get(MainActivity.class).activeFragment=this;
         // Set up the click listener for the OK button
         binding.buttonOk.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -60,7 +58,7 @@ public class FragmentRegister extends Fragment implements NFCReactor{
         });
 
 
-        nfcIntentHandler=new NFCHandler.NfcIntentHandler() {
+        nfcIntentHandler = new NFCHandler.NfcIntentHandler() {
             @Override
             public void onNDEFDiscovered(Tag tag) {
                 handleNdefDiscovered(tag);
@@ -68,8 +66,10 @@ public class FragmentRegister extends Fragment implements NFCReactor{
 
             @Override
             public void onNDEFlessDiscovered(Tag tag) {
-                statusViewModel.setStatusText("Empty Tag discovered");
-                NavHostFragment.findNavController(FragmentRegister.this).navigate(R.id.action_fragmentScan_to_fragmentRegister);
+                statusViewModel.setStatusText("Reg:Empty Tag discovered");
+                Lookup.get(MainActivity.class).runOnMainThread(() -> {
+                    NavHostFragment.findNavController(FragmentRegister.this).navigate(R.id.action_fragmentRegister_to_fragmentInitializeTag);
+                });
             }
 
             @Override
@@ -86,50 +86,51 @@ public class FragmentRegister extends Fragment implements NFCReactor{
     }
 
     private void handleNdefDiscovered(Tag tag) {
-        try {
-            Ndef ndef = Ndef.get(tag);
-            if (ndef == null) {
-                throw new RuntimeException("Cannot initialize NDEF on this tag");
-            }
-            ndef.connect();
-            NdefMessage ndefMessage = ndef.getNdefMessage();
-
-            TagContent tagContent = Lookup.get(TagContent.class);
-            tagContent.setnDefRecords(nfcHandler.extractTextRecordsFromNdefMessage(ndefMessage));
-
-            AppCompatActivity activity = (AppCompatActivity) getActivity();
-            nfcHandler.disableReaderMode(activity);
-
-            if (ndefMessage == null || tagContent.isEmpty()) {
-                NavHostFragment.findNavController(this).navigate(R.id.action_fragmentScan_to_fragmentRegister);
-            } else {
-                NavHostFragment.findNavController(this).navigate(R.id.action_fragmentScan_to_fragmentHarvest);
-            }
-
-            ndef.close();
-        } catch (IOException | FormatException e) {
-            Log.e("FragmentScan", "Error processing tag: " + e.getMessage(), e);
-            statusViewModel.setStatusText("Error processing tag: " + e.getMessage());
-        }
+//        try {
+//            Ndef ndef = Ndef.get(tag);
+//            if (ndef == null) {
+//                throw new RuntimeException("Cannot initialize NDEF on this tag");
+//            }
+//            ndef.connect();
+//            NdefMessage ndefMessage = ndef.getNdefMessage();
+//
+//            TagContent tagContent = Lookup.get(TagContent.class);
+//            tagContent.setnDefRecords(nfcHandler.extractTextRecordsFromNdefMessage(ndefMessage));
+//
+//            AppCompatActivity activity = (AppCompatActivity) getActivity();
+//            nfcHandler.disableReaderMode(activity);
+//
+//            if (ndefMessage == null || tagContent.isEmpty()) {
+//                NavHostFragment.findNavController(this).navigate(R.id.action_fragmentScan_to_fragmentRegister);
+//            } else {
+//                NavHostFragment.findNavController(this).navigate(R.id.action_fragmentScan_to_fragmentHarvest);
+//            }
+//
+//            ndef.close();
+//        } catch (IOException | FormatException e) {
+//            Log.e("FragmentScan", "Error processing tag: " + e.getMessage(), e);
+//            statusViewModel.setStatusText("Error processing tag: " + e.getMessage());
+//        }
     }
+
     // Method to handle the logic when the OK button is pressed
     private void onRegisterNowPressed() {
-        String id=binding.editTextPersonalID.getText().toString();
-        if(id.isEmpty()){
-            id="SHNDJBN929";
+        String id = binding.editTextPersonalID.getText().toString();
+        if (id.isEmpty()) {
+            id = "SHNDJBN929";
         }
 
-        String dob=binding.editTextDateOfBirth.getText().toString();
-        if(dob.isEmpty()){
-            dob="1970-01-01";
+        String dob = binding.editTextDateOfBirth.getText().toString();
+        if (dob.isEmpty()) {
+            dob = "1970-01-01";
         }
 
-        String pob=binding.editTextPlaceOfBirth.getText().toString();
-        if(pob.isEmpty()){
-            pob="bad-saarow-pieskow";
+        String pob = binding.editTextPlaceOfBirth.getText().toString();
+        if (pob.isEmpty()) {
+            pob = "bad-saarow-pieskow";
         }
 
-        Toast.makeText(getContext(), "Thx! ("+dob+","+pob+","+id+") please attach tag again.", Toast.LENGTH_SHORT).show();
+        Toast.makeText(getContext(), "Thx! (" + dob + "," + pob + "," + id + ") please attach tag again.", Toast.LENGTH_SHORT).show();
 
         Lookup.get(MainActivity.class).runOnMainThread(() -> {
             NavHostFragment.findNavController(FragmentRegister.this).navigate(R.id.action_fragmentRegister_to_fragmentInitializeTag);
@@ -146,11 +147,10 @@ public class FragmentRegister extends Fragment implements NFCReactor{
     @Override
     public void onResume() {
         super.onResume();
-        Lookup.get(MainActivity.class).activeFragment=this;
         nfcHandler.showNFCEnablementStatusTexts();
         if (nfcHandler.isNfcSupported() && nfcHandler.isNfcEnabled()) {
             AppCompatActivity activity = (AppCompatActivity) getActivity();
-            nfcHandler.enableReaderMode(activity);
+//            nfcHandler.enableReaderMode(activity);
         } else {
             statusViewModel.setStatusText(getString(R.string.nfc_is_not_supported_on_this_device));
         }

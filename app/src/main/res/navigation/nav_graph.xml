@@ -31,12 +31,6 @@
         <action
             android:id="@+id/action_fragmentRegister_to_fragmentInitializeTag"
             app:destination="@id/fragmentInitializeTag" />
-        <action
-            android:id="@+id/action_fragmentRegister_to_fragmentConfirm"
-            app:destination="@id/fragmentConfirm" />
-        <action
-            android:id="@+id/action_fragmentRegister_to_fragmentError"
-            app:destination="@id/fragmentError" />
     </fragment>
 
     <!-- Initialize Tag Fragment -->
@@ -45,12 +39,6 @@
         android:name="com.kbiz.highsocietycheckout.FragmentInitializeTag"
         android:label="fragment_initialize_tag"
         tools:layout="@layout/fragment_initialize_tag">
-        <action
-            android:id="@+id/action_fragmentInitializeTag_to_fragmentConfirm"
-            app:destination="@id/fragmentConfirm" />
-        <action
-            android:id="@+id/action_fragmentInitializeTag_to_fragmentError"
-            app:destination="@id/fragmentError" />
         <action
             android:id="@+id/action_fragmentInitializeTag_to_fragmentHarvest"
             app:destination="@id/fragmentHarvest" />
@@ -62,12 +50,6 @@
         android:name="com.kbiz.highsocietycheckout.FragmentHarvest"
         android:label="fragment_harvest"
         tools:layout="@layout/fragment_harvest">
-        <action
-            android:id="@+id/action_fragmentHarvest_to_fragmentConfirm"
-            app:destination="@id/fragmentConfirm" />
-        <action
-            android:id="@+id/action_fragmentHarvest_to_fragmentError"
-            app:destination="@id/fragmentError" />
     </fragment>
 
     <!-- Unregister Fragment -->
@@ -76,12 +58,6 @@
         android:name="com.kbiz.highsocietycheckout.FragmentUnregister"
         android:label="fragment_unregister"
         tools:layout="@layout/fragment_unregister">
-        <action
-            android:id="@+id/action_fragmentUnregister_to_fragmentConfirm"
-            app:destination="@id/fragmentConfirm" />
-        <action
-            android:id="@+id/action_fragmentUnregister_to_fragmentError"
-            app:destination="@id/fragmentError" />
     </fragment>
 
 </navigation>
