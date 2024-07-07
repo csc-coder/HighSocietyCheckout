@@ -1,8 +1,10 @@
 package com.kbiz.highsocietycheckout.data;
 
+import androidx.lifecycle.ViewModel;
+
 import java.util.ArrayList;
 
-public class TagContent {
+public class TagContent extends ViewModel {
     private long readTime=-1;
     private ArrayList<String> nDefRecords;
     public ArrayList<String> getnDefRecords() {

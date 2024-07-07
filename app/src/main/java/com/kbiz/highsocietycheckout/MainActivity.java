@@ -20,8 +20,8 @@ import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
+import com.kbiz.highsocietycheckout.data.StatusViewModel;
 import com.kbiz.highsocietycheckout.databinding.ActivityMainBinding;
-import com.kbiz.highsocietycheckout.lookup.Lookup;
 
 public class MainActivity extends AppCompatActivity {
     private StatusViewModel statusViewModel;
@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         statusViewModel = new ViewModelProvider(this).get(StatusViewModel.class);
-        nfcHandler = new NFCHandler(this.getApplicationContext(), statusViewModel);
+        nfcHandler = NFCHandler.getInstance(this, statusViewModel);
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -65,7 +65,6 @@ public class MainActivity extends AppCompatActivity {
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
 
-        Lookup.add(this);
     }
 
     @Override
@@ -122,6 +121,8 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 fragment = getCurrentFragment();
             }
+            Log.d("LOK", "Intent details: " + fragment.toString());
+
             if (fragment instanceof NFCReactor) {
                 ((NFCReactor) fragment).handleNFCIntent(intent);
             }

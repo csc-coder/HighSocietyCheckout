@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.kbiz.highsocietycheckout.data.StatusViewModel;
 import com.kbiz.highsocietycheckout.databinding.FragmentStatusBarBinding;
 
 public class FragmentStatusBar extends Fragment {

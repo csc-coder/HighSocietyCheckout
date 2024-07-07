@@ -1,26 +1,16 @@
 package com.kbiz.highsocietycheckout;
 
 import android.content.Intent;
-import android.nfc.FormatException;
-import android.nfc.NdefMessage;
 import android.nfc.Tag;
-import android.nfc.tech.Ndef;
 import android.os.Bundle;
-
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.fragment.NavHostFragment;
-
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.kbiz.highsocietycheckout.data.TagContent;
-import com.kbiz.highsocietycheckout.lookup.Lookup;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
-import java.io.IOException;
+import com.kbiz.highsocietycheckout.data.StatusViewModel;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -38,7 +28,7 @@ public class FragmentHarvest extends Fragment implements NFCReactor{
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        nfcHandler = Lookup.get(NFCHandler.class);
+        nfcHandler = NFCHandler.getInstance();
         statusViewModel = new ViewModelProvider(requireActivity()).get(StatusViewModel.class);
         nfcIntentHandler=new NFCHandler.NfcIntentHandler() {
             @Override
@@ -66,31 +56,6 @@ public class FragmentHarvest extends Fragment implements NFCReactor{
     }
 
     private void handleNdefDiscovered(Tag tag) {
-        try {
-            Ndef ndef = Ndef.get(tag);
-            if (ndef == null) {
-                throw new RuntimeException("Cannot initialize NDEF on this tag");
-            }
-            ndef.connect();
-            NdefMessage ndefMessage = ndef.getNdefMessage();
-
-            TagContent tagContent = Lookup.get(TagContent.class);
-            tagContent.setnDefRecords(nfcHandler.extractTextRecordsFromNdefMessage(ndefMessage));
-
-            AppCompatActivity activity = (AppCompatActivity) getActivity();
-            nfcHandler.disableReaderMode(activity);
-
-            if (ndefMessage == null || tagContent.isEmpty()) {
-                NavHostFragment.findNavController(this).navigate(R.id.action_fragmentScan_to_fragmentRegister);
-            } else {
-                NavHostFragment.findNavController(this).navigate(R.id.action_fragmentScan_to_fragmentHarvest);
-            }
-
-            ndef.close();
-        } catch (IOException | FormatException e) {
-            Log.e("FragmentScan", "Error processing tag: " + e.getMessage(), e);
-            statusViewModel.setStatusText("Error processing tag: " + e.getMessage());
-        }
     }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,

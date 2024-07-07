@@ -18,11 +18,11 @@ import android.util.Log;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.navigation.fragment.NavHostFragment;
 
-import com.kbiz.highsocietycheckout.lookup.Lookup;
+import com.kbiz.highsocietycheckout.data.StatusViewModel;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,21 +32,38 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
     public static final int REQUEST_CODE_NFC = 1;
     public static final int NFC_PERMISSION_CODE = 1;
     private static final String TAG = "NFCHandler";
+    private static NFCHandler instance;
+
     private final NfcAdapter nfcAdapter;
-    private final Context context;
+    private final WeakReference<Context> context;
     private NfcIntentHandler intentHandler;
     private final StatusViewModel statusViewModel;
 
     public NFCHandler(Context context, StatusViewModel statusViewModel) {
-        this.context = context.getApplicationContext();
+        this.context = new WeakReference<>(context);
         nfcAdapter = NfcAdapter.getDefaultAdapter(context);
         this.statusViewModel = statusViewModel;
         if (nfcAdapter == null) {
             Log.e(TAG, "NFC is not supported on this device.");
         }
         setNFCStatusText();
-        Lookup.add(this);
     }
+
+    // Public method to provide access to the singleton instance
+    public static synchronized NFCHandler getInstance(Context context, StatusViewModel statusViewModel) {
+        if (instance == null) {
+            instance = new NFCHandler(context, statusViewModel);
+        }
+        return instance;
+    }
+    // Public method to provide access to the singleton instance
+    public static synchronized NFCHandler getInstance() {
+        if (instance == null) {
+            throw new RuntimeException("init statusViewModel first by using getInstance(context, statusviewmodel) at least once at app startup");
+        }
+        return instance;
+    }
+
     public boolean isNfcSupported() {
         return nfcAdapter != null;
     }
@@ -57,11 +74,11 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
 
     private void setNFCStatusText() {
         if (!isNfcSupported()) {
-            statusViewModel.setStatusText(context.getResources().getString(R.string.nfc_is_not_supported_on_this_device));
+            statusViewModel.setStatusText(context.get().getResources().getString(R.string.nfc_is_not_supported_on_this_device));
         } else if (!isNfcEnabled()) {
-            statusViewModel.setStatusText(context.getResources().getString(R.string.nfc_is_not_enabled));
+            statusViewModel.setStatusText(context.get().getResources().getString(R.string.nfc_is_not_enabled));
         } else {
-            statusViewModel.setStatusText(context.getResources().getString(R.string.nfc_is_enabled));
+            statusViewModel.setStatusText(context.get().getResources().getString(R.string.nfc_is_enabled));
         }
     }
 
@@ -85,7 +102,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
         if (nfcAdapter == null || activity==null) {
             return;
         }
-        Lookup.get(MainActivity.class).runOnMainThread(() -> {
+        getMainActivity().runOnMainThread(() -> {
             try{
                 nfcAdapter.disableReaderMode(activity);
                 statusViewModel.setStatusText("Disabled reader mode");
@@ -99,7 +116,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
     public void enableForegroundDispatch(AppCompatActivity activity) {
         Intent intent = new Intent(activity, activity.getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(activity, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
-        if (ContextCompat.checkSelfPermission(this.context, android.Manifest.permission.NFC) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this.context.get(), android.Manifest.permission.NFC) != PackageManager.PERMISSION_GRANTED) {
             // Request NFC permission
             ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.NFC}, NFC_PERMISSION_CODE);
         }
@@ -115,7 +132,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
 
     @Override
     public void onTagDiscovered(Tag tag) {
-        intentHandler=((NFCReactor) Lookup.get(MainActivity.class).getCurrentFragment()).getNFCIntentHandler();
+        intentHandler=((NFCReactor) getMainActivity().getCurrentFragment()).getNFCIntentHandler();
         if (intentHandler == null) {
             return;
         }
@@ -226,14 +243,6 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
         return "fancyHashh189rh183rhj";
     }
 
-    public void setIntentHandler(NfcIntentHandler handler) {
-        this.intentHandler = handler;
-    }
-
-    public NfcAdapter getNfcAdapter() {
-        return nfcAdapter;
-    }
-
     public interface NfcIntentHandler {
         void onNDEFDiscovered(Tag tag);
 
@@ -315,5 +324,14 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
         } else {
             statusViewModel.setStatusText("NFC is active. We're good to go.");
         }
+    }
+
+    // Method to get MainActivity safely
+    public MainActivity getMainActivity() {
+        Context context = this.context.get();
+        if (context instanceof MainActivity) {
+            return (MainActivity) context;
+        }
+        return null;
     }
 }

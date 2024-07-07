@@ -18,8 +18,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.kbiz.highsocietycheckout.data.StatusViewModel;
 import com.kbiz.highsocietycheckout.data.TagContent;
-import com.kbiz.highsocietycheckout.lookup.Lookup;
 
 import java.io.IOException;
 
@@ -43,7 +43,7 @@ public class FragmentInitializeTag extends Fragment implements NFCReactor {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        nfcHandler = Lookup.get(NFCHandler.class);
+        nfcHandler = NFCHandler.getInstance();
         statusViewModel = new ViewModelProvider(requireActivity()).get(StatusViewModel.class);
 
         nfcIntentHandler=new NFCHandler.NfcIntentHandler() {
@@ -96,33 +96,7 @@ public class FragmentInitializeTag extends Fragment implements NFCReactor {
     }
 
     private void handleNdefDiscovered(Tag tag) {
-        try {
-            Ndef ndef = Ndef.get(tag);
-            if (ndef == null) {
-                throw new RuntimeException("Cannot initialize NDEF on this tag");
-            }
-            ndef.connect();
-            NdefMessage ndefMessage = ndef.getNdefMessage();
-
-            TagContent tagContent = Lookup.get(TagContent.class);
-            tagContent.setnDefRecords(nfcHandler.extractTextRecordsFromNdefMessage(ndefMessage));
-
-            AppCompatActivity activity = (AppCompatActivity) getActivity();
-            nfcHandler.disableReaderMode(activity);
-
-            if (ndefMessage == null || tagContent.isEmpty()) {
-                NavHostFragment.findNavController(this).navigate(R.id.action_fragmentScan_to_fragmentRegister);
-            } else {
-                NavHostFragment.findNavController(this).navigate(R.id.action_fragmentScan_to_fragmentHarvest);
-            }
-
-            ndef.close();
-        } catch (IOException | FormatException e) {
-            Log.e("FragmentScan", "Error processing tag: " + e.getMessage(), e);
-            statusViewModel.setStatusText("Error processing tag: " + e.getMessage());
-        }
     }
-
 
     @Override
     public void onPause() {

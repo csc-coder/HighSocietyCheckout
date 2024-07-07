@@ -1,5 +1,5 @@
 // StatusViewModel.java
-package com.kbiz.highsocietycheckout;
+package com.kbiz.highsocietycheckout.data;
 
 import android.util.Log;
 

@@ -18,9 +18,9 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
+import com.kbiz.highsocietycheckout.data.StatusViewModel;
 import com.kbiz.highsocietycheckout.data.TagContent;
 import com.kbiz.highsocietycheckout.databinding.FragmentScanBinding;
-import com.kbiz.highsocietycheckout.lookup.Lookup;
 
 import java.io.IOException;
 
@@ -35,7 +35,7 @@ public class FragmentScan extends Fragment implements NFCReactor {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentScanBinding.inflate(inflater, container, false);
         statusViewModel = new ViewModelProvider(requireActivity()).get(StatusViewModel.class);
-        nfcHandler = Lookup.get(NFCHandler.class);
+        nfcHandler = NFCHandler.getInstance();
 
         if (nfcHandler.isNfcSupported() && nfcHandler.isNfcEnabled()) {
             nfcHandler.enableReaderMode((AppCompatActivity) getActivity());
@@ -54,9 +54,8 @@ public class FragmentScan extends Fragment implements NFCReactor {
                 statusViewModel.setStatusText("Scan:Empty Tag discovered");
                 NavController ctrl = NavHostFragment.findNavController(FragmentScan.this);
                 nfcHandler.disableReaderMode((AppCompatActivity) getActivity());
-                Lookup.get(MainActivity.class).runOnMainThread(() -> {
-                    ctrl.navigate(R.id.action_fragmentScan_to_fragmentRegister);
-                });
+                ((MainActivity) getContext()).runOnMainThread(
+                        () -> ctrl.navigate(R.id.action_fragmentScan_to_fragmentRegister));
             }
 
             @Override
@@ -88,7 +87,7 @@ public class FragmentScan extends Fragment implements NFCReactor {
             ndef.connect();
             NdefMessage ndefMessage = ndef.getNdefMessage();
 
-            TagContent tagContent = Lookup.get(TagContent.class);
+            TagContent tagContent = new ViewModelProvider(requireActivity()).get(TagContent.class);
             tagContent.setnDefRecords(nfcHandler.extractTextRecordsFromNdefMessage(ndefMessage));
 
             if (ndefMessage == null || tagContent.isEmpty()) {
