@@ -139,10 +139,17 @@ public class FragmentInitializeTag extends Fragment implements NFCReactor {
             tagContent.setnDefRecords(nfcHandler.extractTextRecordsFromNdefMessage(ndefMessage));
 
             if (ndefMessage == null || tagContent.isEmpty()) {
-                NdefRecord hash=nfcHandler.createHashRecord(this.userData);
+                NdefRecord hash=NFCHandler.createHashRecord(this.userData);
                 ndefMessage = new NdefMessage(hash);
                 nfcHandler.writeNdefMessage(tag,ndefMessage);
-                Log.d("LOK", "hash was written: "+hash);
+
+                Log.d("LOK", "hash was written to tag: "+hash);
+
+                ((MainActivity) getContext()).runOnMainThread(() -> {
+                    NavHostFragment.findNavController(FragmentInitializeTag.this).navigate(R.id.action_fragmentInitializeTag_to_fragmentHarvest);
+                });
+            } else{
+                Log.d("LOK", "tag initialized. moving to harvest");
 
                 ((MainActivity) getContext()).runOnMainThread(() -> {
                     NavHostFragment.findNavController(FragmentInitializeTag.this).navigate(R.id.action_fragmentInitializeTag_to_fragmentHarvest);

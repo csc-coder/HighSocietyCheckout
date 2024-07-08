@@ -95,9 +95,11 @@ public class FragmentScan extends Fragment implements NFCReactor {
             tagContent.setnDefRecords(nfcHandler.extractTextRecordsFromNdefMessage(ndefMessage));
 
             if (ndefMessage == null || tagContent.isEmpty()) {
+                Log.d("LOK", "empty tag found, switching to register frag");
                 ((MainActivity) getContext()).runOnMainThread(
                         () -> NavHostFragment.findNavController(this).navigate(R.id.action_fragmentScan_to_fragmentRegister));
             } else {
+                Log.d("LOK", "filled tag found, switching to harvest frag");
                 ((MainActivity) getContext()).runOnMainThread(
                         () -> NavHostFragment.findNavController(this).navigate(R.id.action_fragmentScan_to_fragmentHarvest));
             }

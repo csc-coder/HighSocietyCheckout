@@ -22,6 +22,9 @@ import androidx.core.content.ContextCompat;
 import com.kbiz.highsocietycheckout.MainActivity;
 import com.kbiz.highsocietycheckout.R;
 import com.kbiz.highsocietycheckout.data.StatusViewModel;
+import com.lambdapioneer.argon2kt.Argon2Kt;
+import com.lambdapioneer.argon2kt.Argon2KtResult;
+import com.lambdapioneer.argon2kt.Argon2Mode;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -243,20 +246,54 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
         return result;
     }
 
-    public NdefRecord createHashRecord(String payload) {
-        byte[] languageCode = Locale.getDefault().getLanguage().getBytes(StandardCharsets.US_ASCII);
-        byte[] text = payload.getBytes(StandardCharsets.UTF_8);
-        byte[] data = new byte[1 + languageCode.length + text.length]; // +1 for the status byte
-        data[0] = (byte) languageCode.length; // status byte
-        System.arraycopy(languageCode, 0, data, 1, languageCode.length);
-        System.arraycopy(text, 0, data, 1 + languageCode.length, text.length);
-        Log.d(TAG, "Created hash from payload: "+data);
-
-        return new NdefRecord(NdefRecord.TNF_WELL_KNOWN, NdefRecord.RTD_TEXT, new byte[0], data);
+    private boolean makeReadOnly(Tag tag) {
+        Ndef ndef = Ndef.get(tag);
+        if (ndef != null) {
+            try {
+                ndef.connect();
+                if (ndef.canMakeReadOnly()) {
+                    ndef.makeReadOnly();
+                    return true;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    ndef.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return false; // Failed to make the tag read-only
     }
+    public static NdefRecord createHashRecord(String payload) {
+        Argon2Kt argon2Java = new Argon2Kt();
 
-    private String createHash() {
-        return "fancyHashh189rh183rhj";
+        byte[] passwordByteArray = payload.getBytes(StandardCharsets.UTF_8);
+
+        // Hash the password
+        Argon2KtResult hashResult = argon2Java.hash(
+                Argon2Mode.ARGON2_I,
+                passwordByteArray,
+                "saltqoawidehaWOIUHD".getBytes(),
+                5,
+                65536
+        );
+
+        Log.d(TAG, "Raw hash: " + hashResult.rawHashAsByteArray());
+        Log.d(TAG, "Encoded string: " + hashResult.encodedOutputAsString());
+
+        // Verify the password
+        boolean verificationResult = argon2Java.verify(
+                Argon2Mode.ARGON2_I,
+                hashResult.encodedOutputAsString(),
+                passwordByteArray
+        );
+
+        Log.d(TAG, "payload verified: " + verificationResult);
+        return new NdefRecord(NdefRecord.TNF_WELL_KNOWN, NdefRecord.RTD_TEXT, new byte[0], hashResult.encodedOutputAsString().getBytes());
+
     }
 
     public interface NfcIntentHandler {

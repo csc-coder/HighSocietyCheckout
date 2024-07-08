@@ -73,6 +73,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        // Enable foreground dispatch and reader mode in onResumeFragments to ensure proper state
+    }
+
+    @Override
+    protected void onResumeFragments() {
+        super.onResumeFragments();
         // Enable foreground dispatch
         nfcHandler.enableForegroundDispatch();
         // Optionally enable reader mode
@@ -87,7 +93,6 @@ public class MainActivity extends AppCompatActivity {
         // Optionally disable reader mode
         nfcHandler.disableReaderMode();
     }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);

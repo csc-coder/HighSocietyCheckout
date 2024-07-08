@@ -96,9 +96,9 @@ public class FragmentHarvest extends Fragment implements NFCReactor {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
         return inflater.inflate(R.layout.fragment_harvest, container, false);
     }
+
     public void handleNFCIntent(Intent intent) {
         nfcHandler.handleIntent(intent, nfcIntentHandler);
     }
