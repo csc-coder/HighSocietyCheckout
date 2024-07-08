@@ -1,4 +1,4 @@
-package com.kbiz.highsocietycheckout;
+package com.kbiz.highsocietycheckout.nfc;
 
 import android.content.Intent;
 

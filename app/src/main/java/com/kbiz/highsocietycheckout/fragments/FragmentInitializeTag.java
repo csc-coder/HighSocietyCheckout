@@ -1,4 +1,4 @@
-package com.kbiz.highsocietycheckout;
+package com.kbiz.highsocietycheckout.fragments;
 
 import android.content.Intent;
 import android.nfc.FormatException;
@@ -19,9 +19,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.kbiz.highsocietycheckout.MainActivity;
+import com.kbiz.highsocietycheckout.R;
 import com.kbiz.highsocietycheckout.data.StatusViewModel;
 import com.kbiz.highsocietycheckout.data.TagContent;
 import com.kbiz.highsocietycheckout.databinding.FragmentInitializeTagBinding;
+import com.kbiz.highsocietycheckout.nfc.NFCHandler;
+import com.kbiz.highsocietycheckout.nfc.NFCReactor;
 
 import java.io.IOException;
 

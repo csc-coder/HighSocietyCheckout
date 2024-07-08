@@ -1,4 +1,4 @@
-package com.kbiz.highsocietycheckout;
+package com.kbiz.highsocietycheckout.fragments;
 
 import android.os.Bundle;
 

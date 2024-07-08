@@ -1,9 +1,8 @@
-package com.kbiz.highsocietycheckout;
+package com.kbiz.highsocietycheckout.fragments;
 
 import android.content.Intent;
 import android.nfc.FormatException;
 import android.nfc.NdefMessage;
-import android.nfc.NdefRecord;
 import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.os.Bundle;
@@ -16,15 +15,19 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 
+import com.kbiz.highsocietycheckout.MainActivity;
+import com.kbiz.highsocietycheckout.R;
 import com.kbiz.highsocietycheckout.data.StatusViewModel;
 import com.kbiz.highsocietycheckout.data.TagContent;
+import com.kbiz.highsocietycheckout.nfc.NFCHandler;
+import com.kbiz.highsocietycheckout.nfc.NFCReactor;
 
 import java.io.IOException;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class FragmentHarvest extends Fragment implements NFCReactor{
+public class FragmentHarvest extends Fragment implements NFCReactor {
     private NFCHandler nfcHandler;
 
     private StatusViewModel statusViewModel;

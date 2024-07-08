@@ -1,4 +1,4 @@
-package com.kbiz.highsocietycheckout;
+package com.kbiz.highsocietycheckout.nfc;
 
 import android.Manifest;
 import android.app.PendingIntent;
@@ -19,6 +19,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.kbiz.highsocietycheckout.MainActivity;
+import com.kbiz.highsocietycheckout.R;
 import com.kbiz.highsocietycheckout.data.StatusViewModel;
 
 import java.io.IOException;
@@ -83,13 +85,13 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
         }
     }
 
-    public void enableReaderMode(AppCompatActivity activity) {
+    public void enableReaderMode() {
         if (nfcAdapter == null) {
             return;
         }
         Bundle options = new Bundle();
         options.putInt(NfcAdapter.EXTRA_READER_PRESENCE_CHECK_DELAY, 250);
-        nfcAdapter.enableReaderMode(activity, this,
+        nfcAdapter.enableReaderMode(getMainActivity(), this,
                 NfcAdapter.FLAG_READER_NFC_A |
                         NfcAdapter.FLAG_READER_NFC_B |
                         NfcAdapter.FLAG_READER_NFC_F |
@@ -115,7 +117,8 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
     }
 
 
-    public void enableForegroundDispatch(AppCompatActivity activity) {
+    public void enableForegroundDispatch() {
+        MainActivity activity = getMainActivity();
         Intent intent = new Intent(activity, activity.getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(activity, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
         if (ContextCompat.checkSelfPermission(this.context.get(), android.Manifest.permission.NFC) != PackageManager.PERMISSION_GRANTED) {
@@ -127,13 +130,16 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
 
     }
 
-    public void disableForegroundDispatch(AppCompatActivity activity) {
-        nfcAdapter.disableForegroundDispatch(activity);
+    public void disableForegroundDispatch() {
+        nfcAdapter.disableForegroundDispatch(getMainActivity());
         statusViewModel.setStatusText("Disabled foreground dispatch");
     }
 
     @Override
     public void onTagDiscovered(Tag tag) {
+        if( ! (getMainActivity().getCurrentFragment() instanceof NFCReactor)){
+            return;
+        }
         intentHandler = ((NFCReactor) getMainActivity().getCurrentFragment()).getNFCIntentHandler();
         if (intentHandler == null) {
             return;
@@ -228,7 +234,6 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
                 if (ndefFormatable != null) {
                     ndefFormatable.close();
                 }
-                disableReaderMode();
             } catch (Exception e) {
                 Log.e(TAG, "Error closing NDEFFormatable", e);
                 result = "ERR:" + e.getMessage() + "\n" + Arrays.toString(e.getStackTrace());

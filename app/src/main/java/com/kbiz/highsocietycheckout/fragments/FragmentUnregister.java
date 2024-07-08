@@ -1,4 +1,4 @@
-package com.kbiz.highsocietycheckout;
+package com.kbiz.highsocietycheckout.fragments;
 
 import android.os.Bundle;
 
@@ -8,12 +8,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.kbiz.highsocietycheckout.R;
+
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link FragmentConfirm#newInstance} factory method to
+ * Use the {@link FragmentUnregister#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class FragmentConfirm extends Fragment {
+public class FragmentUnregister extends Fragment {
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -24,7 +26,7 @@ public class FragmentConfirm extends Fragment {
     private String mParam1;
     private String mParam2;
 
-    public FragmentConfirm() {
+    public FragmentUnregister() {
         // Required empty public constructor
     }
 
@@ -34,11 +36,11 @@ public class FragmentConfirm extends Fragment {
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
-     * @return A new instance of fragment FragmentConfirm.
+     * @return A new instance of fragment FragmentUnregister.
      */
     // TODO: Rename and change types and number of parameters
-    public static FragmentConfirm newInstance(String param1, String param2) {
-        FragmentConfirm fragment = new FragmentConfirm();
+    public static FragmentUnregister newInstance(String param1, String param2) {
+        FragmentUnregister fragment = new FragmentUnregister();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -59,6 +61,6 @@ public class FragmentConfirm extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_confirm, container, false);
+        return inflater.inflate(R.layout.fragment_unregister, container, false);
     }
 }

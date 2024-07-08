@@ -8,7 +8,7 @@
     <!-- Scan Fragment -->
     <fragment
         android:id="@+id/fragmentScan"
-        android:name="com.kbiz.highsocietycheckout.FragmentScan"
+        android:name="com.kbiz.highsocietycheckout.fragments.FragmentScan"
         android:label="fragment_scan"
         tools:layout="@layout/fragment_scan">
         <action
@@ -25,7 +25,7 @@
     <!-- Register Fragment -->
     <fragment
         android:id="@+id/fragmentRegister"
-        android:name="com.kbiz.highsocietycheckout.FragmentRegister"
+        android:name="com.kbiz.highsocietycheckout.fragments.FragmentRegister"
         android:label="fragment_register"
         tools:layout="@layout/fragment_register">
         <action
@@ -36,7 +36,7 @@
     <!-- Initialize Tag Fragment -->
     <fragment
         android:id="@+id/fragmentInitializeTag"
-        android:name="com.kbiz.highsocietycheckout.FragmentInitializeTag"
+        android:name="com.kbiz.highsocietycheckout.fragments.FragmentInitializeTag"
         android:label="fragment_initialize_tag"
         tools:layout="@layout/fragment_initialize_tag">
         <action
@@ -56,7 +56,7 @@
     <!-- Harvest Fragment -->
     <fragment
         android:id="@+id/fragmentHarvest"
-        android:name="com.kbiz.highsocietycheckout.FragmentHarvest"
+        android:name="com.kbiz.highsocietycheckout.fragments.FragmentHarvest"
         android:label="fragment_harvest"
         tools:layout="@layout/fragment_harvest">
         <action
@@ -67,7 +67,7 @@
     <!-- Unregister Fragment -->
     <fragment
         android:id="@+id/fragmentUnregister"
-        android:name="com.kbiz.highsocietycheckout.FragmentUnregister"
+        android:name="com.kbiz.highsocietycheckout.fragments.FragmentUnregister"
         android:label="fragment_unregister"
         tools:layout="@layout/fragment_unregister">
     </fragment>

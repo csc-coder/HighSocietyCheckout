@@ -1,4 +1,4 @@
-package com.kbiz.highsocietycheckout;
+package com.kbiz.highsocietycheckout.fragments;
 
 import android.content.Intent;
 import android.nfc.FormatException;
@@ -18,9 +18,13 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
+import com.kbiz.highsocietycheckout.MainActivity;
+import com.kbiz.highsocietycheckout.R;
 import com.kbiz.highsocietycheckout.data.StatusViewModel;
 import com.kbiz.highsocietycheckout.data.TagContent;
 import com.kbiz.highsocietycheckout.databinding.FragmentScanBinding;
+import com.kbiz.highsocietycheckout.nfc.NFCHandler;
+import com.kbiz.highsocietycheckout.nfc.NFCReactor;
 
 import java.io.IOException;
 
@@ -38,7 +42,7 @@ public class FragmentScan extends Fragment implements NFCReactor {
         nfcHandler = NFCHandler.getInstance();
 
         if (nfcHandler.isNfcSupported() && nfcHandler.isNfcEnabled()) {
-            nfcHandler.enableReaderMode((AppCompatActivity) getActivity());
+            statusViewModel.setStatusText(getString(R.string.nfc_is_enabled));
         } else {
             statusViewModel.setStatusText(getString(R.string.nfc_is_not_supported_on_this_device));
         }
@@ -53,7 +57,6 @@ public class FragmentScan extends Fragment implements NFCReactor {
             public void onNDEFlessDiscovered(Tag tag) {
                 statusViewModel.setStatusText("Scan:Empty Tag discovered");
                 NavController ctrl = NavHostFragment.findNavController(FragmentScan.this);
-                nfcHandler.disableReaderMode();
                 ((MainActivity) getContext()).runOnMainThread(
                         () -> ctrl.navigate(R.id.action_fragmentScan_to_fragmentRegister));
             }

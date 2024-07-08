@@ -22,6 +22,9 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.kbiz.highsocietycheckout.data.StatusViewModel;
 import com.kbiz.highsocietycheckout.databinding.ActivityMainBinding;
+import com.kbiz.highsocietycheckout.fragments.FragmentStatusBar;
+import com.kbiz.highsocietycheckout.nfc.NFCHandler;
+import com.kbiz.highsocietycheckout.nfc.NFCReactor;
 
 public class MainActivity extends AppCompatActivity {
     private StatusViewModel statusViewModel;
@@ -68,9 +71,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onBackPressed() {
-        // Handle back navigation here
-        super.onBackPressed();
+    protected void onResume() {
+        super.onResume();
+        // Enable foreground dispatch
+        nfcHandler.enableForegroundDispatch();
+        // Optionally enable reader mode
+        nfcHandler.enableReaderMode();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // Disable foreground dispatch
+        nfcHandler.disableForegroundDispatch();
+        // Optionally disable reader mode
+        nfcHandler.disableReaderMode();
     }
 
     @Override
@@ -131,7 +146,6 @@ public class MainActivity extends AppCompatActivity {
 
     public Fragment getCurrentFragment() {
         NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment_content_main);
-        Fragment currentFragment = navHostFragment.getChildFragmentManager().getFragments().get(0);
 
         if (navHostFragment != null) {
             return navHostFragment.getChildFragmentManager().getPrimaryNavigationFragment();
