@@ -64,9 +64,12 @@ public class FragmentRegister extends Fragment  {
         }
 
         Toast.makeText(getContext(), "Thx! (" + dob + "," + pob + "," + id + ") please attach tag again.", Toast.LENGTH_SHORT).show();
+        final String regData=dob + "##" + pob + "##" + id;
 
         ((MainActivity) getContext()).runOnMainThread(() -> {
-            NavHostFragment.findNavController(FragmentRegister.this).navigate(R.id.action_fragmentRegister_to_fragmentInitializeTag);
+            Bundle bundle = new Bundle();
+            bundle.putString("regData", regData);
+            NavHostFragment.findNavController(FragmentRegister.this).navigate(R.id.action_fragmentRegister_to_fragmentInitializeTag, bundle);
         });
     }
 

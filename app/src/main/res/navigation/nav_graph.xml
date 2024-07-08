@@ -42,6 +42,15 @@
         <action
             android:id="@+id/action_fragmentInitializeTag_to_fragmentHarvest"
             app:destination="@id/fragmentHarvest" />
+        <argument
+            android:name="regDataBirthdate"
+            app:argType="string" />
+        <argument
+            android:name="regDataBirthPlace"
+            app:argType="string" />
+        <argument
+            android:name="regDataIDNumber"
+            app:argType="string" />
     </fragment>
 
     <!-- Harvest Fragment -->
@@ -50,6 +59,9 @@
         android:name="com.kbiz.highsocietycheckout.FragmentHarvest"
         android:label="fragment_harvest"
         tools:layout="@layout/fragment_harvest">
+        <action
+            android:id="@+id/action_fragmentHarvest_to_fragmentScan"
+            app:destination="@id/fragmentScan" />
     </fragment>
 
     <!-- Unregister Fragment -->

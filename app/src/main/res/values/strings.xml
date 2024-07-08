@@ -12,7 +12,7 @@
     <string name="personal_id_hint">Ausweisnummer (HSKDF...)</string>
     <string name="_1g">1g</string>
     <string name="scan_to_harvest">Scan to harvest</string>
-    <string name="place_tag">Place your tag on the back of the device to start initialization.</string>
+    <string name="place_tag">Place Tag to Init</string>
     <string name="initializing">Initializing…</string>
     <string name="nfc_is_not_supported_on_this_device">NFC is not supported on this device.</string>
     <string name="nfc_is_enabled">NFC is enabled.</string>

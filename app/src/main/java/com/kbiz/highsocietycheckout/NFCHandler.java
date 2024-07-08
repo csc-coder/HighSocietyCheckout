@@ -31,7 +31,7 @@ import java.util.Locale;
 public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRemovedListener {
     public static final int REQUEST_CODE_NFC = 1;
     public static final int NFC_PERMISSION_CODE = 1;
-    private static final String TAG = "NFCHandler";
+    private static final String TAG = "LOK_NFC";
     private static NFCHandler instance;
 
     private final NfcAdapter nfcAdapter;
@@ -56,6 +56,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
         }
         return instance;
     }
+
     // Public method to provide access to the singleton instance
     public static synchronized NFCHandler getInstance() {
         if (instance == null) {
@@ -90,24 +91,25 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
         options.putInt(NfcAdapter.EXTRA_READER_PRESENCE_CHECK_DELAY, 250);
         nfcAdapter.enableReaderMode(activity, this,
                 NfcAdapter.FLAG_READER_NFC_A |
-                NfcAdapter.FLAG_READER_NFC_B |
-                NfcAdapter.FLAG_READER_NFC_F |
-                NfcAdapter.FLAG_READER_NFC_V |
-                NfcAdapter.FLAG_READER_NO_PLATFORM_SOUNDS, options);
+                        NfcAdapter.FLAG_READER_NFC_B |
+                        NfcAdapter.FLAG_READER_NFC_F |
+                        NfcAdapter.FLAG_READER_NFC_V |
+                        NfcAdapter.FLAG_READER_NO_PLATFORM_SOUNDS, options);
         statusViewModel.setStatusText("Enabled reader mode");
     }
 
-    public void disableReaderMode(AppCompatActivity activity) {
 
-        if (nfcAdapter == null || activity==null) {
+    public void disableReaderMode() {
+        MainActivity activity=getMainActivity();
+        if (nfcAdapter == null || activity == null) {
             return;
         }
         getMainActivity().runOnMainThread(() -> {
-            try{
+            try {
                 nfcAdapter.disableReaderMode(activity);
                 statusViewModel.setStatusText("Disabled reader mode");
-            } catch (Exception e){
-                Log.d("LOK","got exception.", e);
+            } catch (Exception e) {
+                Log.d("LOK", "got exception.", e);
             }
         });
     }
@@ -132,7 +134,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
 
     @Override
     public void onTagDiscovered(Tag tag) {
-        intentHandler=((NFCReactor) getMainActivity().getCurrentFragment()).getNFCIntentHandler();
+        intentHandler = ((NFCReactor) getMainActivity().getCurrentFragment()).getNFCIntentHandler();
         if (intentHandler == null) {
             return;
         }
@@ -152,6 +154,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
     public ArrayList<String> extractTextRecordsFromNdefMessage(NdefMessage message) {
         if (message == null) {
             Log.e(TAG, "Error parsing NDEF record. Message == null.");
+            return new ArrayList<>();
         }
         ArrayList<String> records = new ArrayList<>();
         for (NdefRecord record : message.getRecords()) {
@@ -169,7 +172,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
         return records;
     }
 
-    public void writeNdefMessage(Tag tag, NdefMessage message) {
+    public void writeNdefMessage(Tag tag, NdefMessage message) throws IOException, FormatException {
         if (tag == null) {
             return;
         }
@@ -178,7 +181,9 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
             if (ndef == null) {
                 return;
             }
-            ndef.connect();
+            if( ! ndef.isConnected()){
+                ndef.connect();
+            }
             if (ndef.isWritable()) {
                 ndef.writeNdefMessage(message);
                 Log.d(TAG, "Hash written to the NFC tag successfully.");
@@ -187,6 +192,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
             }
         } catch (Exception e) {
             Log.e(TAG, "Error writing NFC tag", e);
+            throw e;
         } finally {
             try {
                 if (ndef != null) {
@@ -199,7 +205,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
         }
     }
 
-    public String formatTagNDEF(Tag tag) throws IOException, FormatException {
+    public String formatTagNDEF(Tag tag, String payload) throws IOException, FormatException {
         NdefFormatable ndefFormatable = NdefFormatable.get(tag);
         String result = "OK";
         if (ndefFormatable == null) {
@@ -207,8 +213,11 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
         }
 
         try {
-            ndefFormatable.connect();
-            NdefMessage ndefMessage = new NdefMessage(createHashRecord());
+            if( ! ndefFormatable.isConnected()){
+                ndefFormatable.connect();
+            }
+            NdefRecord hash=createHashRecord(payload);
+            NdefMessage ndefMessage = new NdefMessage(hash);
             ndefFormatable.format(ndefMessage);
             Log.d(TAG, "Tag formatted and message written.");
         } catch (Exception e) {
@@ -219,6 +228,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
                 if (ndefFormatable != null) {
                     ndefFormatable.close();
                 }
+                disableReaderMode();
             } catch (Exception e) {
                 Log.e(TAG, "Error closing NDEFFormatable", e);
                 result = "ERR:" + e.getMessage() + "\n" + Arrays.toString(e.getStackTrace());
@@ -228,14 +238,15 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
         return result;
     }
 
-    private NdefRecord createHashRecord() {
-        String payload = createHash();
+    public NdefRecord createHashRecord(String payload) {
         byte[] languageCode = Locale.getDefault().getLanguage().getBytes(StandardCharsets.US_ASCII);
         byte[] text = payload.getBytes(StandardCharsets.UTF_8);
         byte[] data = new byte[1 + languageCode.length + text.length]; // +1 for the status byte
         data[0] = (byte) languageCode.length; // status byte
         System.arraycopy(languageCode, 0, data, 1, languageCode.length);
         System.arraycopy(text, 0, data, 1 + languageCode.length, text.length);
+        Log.d(TAG, "Created hash from payload: "+data);
+
         return new NdefRecord(NdefRecord.TNF_WELL_KNOWN, NdefRecord.RTD_TEXT, new byte[0], data);
     }
 

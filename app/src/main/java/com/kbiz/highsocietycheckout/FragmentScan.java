@@ -53,7 +53,7 @@ public class FragmentScan extends Fragment implements NFCReactor {
             public void onNDEFlessDiscovered(Tag tag) {
                 statusViewModel.setStatusText("Scan:Empty Tag discovered");
                 NavController ctrl = NavHostFragment.findNavController(FragmentScan.this);
-                nfcHandler.disableReaderMode((AppCompatActivity) getActivity());
+                nfcHandler.disableReaderMode();
                 ((MainActivity) getContext()).runOnMainThread(
                         () -> ctrl.navigate(R.id.action_fragmentScan_to_fragmentRegister));
             }
@@ -86,17 +86,19 @@ public class FragmentScan extends Fragment implements NFCReactor {
             }
             ndef.connect();
             NdefMessage ndefMessage = ndef.getNdefMessage();
+            ndef.close();
 
             TagContent tagContent = new ViewModelProvider(requireActivity()).get(TagContent.class);
             tagContent.setnDefRecords(nfcHandler.extractTextRecordsFromNdefMessage(ndefMessage));
 
             if (ndefMessage == null || tagContent.isEmpty()) {
-                NavHostFragment.findNavController(this).navigate(R.id.action_fragmentScan_to_fragmentRegister);
+                ((MainActivity) getContext()).runOnMainThread(
+                        () -> NavHostFragment.findNavController(this).navigate(R.id.action_fragmentScan_to_fragmentRegister));
             } else {
-                NavHostFragment.findNavController(this).navigate(R.id.action_fragmentScan_to_fragmentHarvest);
+                ((MainActivity) getContext()).runOnMainThread(
+                        () -> NavHostFragment.findNavController(this).navigate(R.id.action_fragmentScan_to_fragmentHarvest));
             }
 
-            ndef.close();
         } catch (IOException | FormatException e) {
             Log.e("FragmentScan", "Error processing tag: " + e.getMessage(), e);
             statusViewModel.setStatusText("Error processing tag: " + e.getMessage());

@@ -1,16 +1,25 @@
 package com.kbiz.highsocietycheckout;
 
 import android.content.Intent;
+import android.nfc.FormatException;
+import android.nfc.NdefMessage;
+import android.nfc.NdefRecord;
 import android.nfc.Tag;
+import android.nfc.tech.Ndef;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.fragment.NavHostFragment;
 
 import com.kbiz.highsocietycheckout.data.StatusViewModel;
+import com.kbiz.highsocietycheckout.data.TagContent;
+
+import java.io.IOException;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -56,11 +65,35 @@ public class FragmentHarvest extends Fragment implements NFCReactor{
     }
 
     private void handleNdefDiscovered(Tag tag) {
+        try {
+            Ndef ndef = Ndef.get(tag);
+            if (ndef == null) {
+                throw new RuntimeException("Cannot initialize NDEF on this tag");
+            }
+            ndef.connect();
+            NdefMessage ndefMessage = ndef.getNdefMessage();
+            ndef.close();
+
+            TagContent tagContent = new ViewModelProvider(requireActivity()).get(TagContent.class);
+            tagContent.setnDefRecords(nfcHandler.extractTextRecordsFromNdefMessage(ndefMessage));
+
+            if (ndefMessage == null || tagContent.isEmpty()) {
+                statusViewModel.setStatusText("Error processing tag. Please re-init tag" );
+                Log.d("LOK", "Error processing tag. Please re-init tag");
+
+                ((MainActivity) getContext()).runOnMainThread(() -> {
+                    NavHostFragment.findNavController(FragmentHarvest.this).navigate(R.id.action_fragmentHarvest_to_fragmentScan);
+                });
+            }
+        } catch (IOException | FormatException e) {
+            Log.e("FragmentScan", "Error processing tag: " + e.getMessage(), e);
+            statusViewModel.setStatusText("Error processing tag: " + e.getMessage());
+        }
     }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+
         return inflater.inflate(R.layout.fragment_harvest, container, false);
     }
     public void handleNFCIntent(Intent intent) {

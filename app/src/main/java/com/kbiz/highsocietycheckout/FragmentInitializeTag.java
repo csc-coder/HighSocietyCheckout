@@ -3,6 +3,7 @@ package com.kbiz.highsocietycheckout;
 import android.content.Intent;
 import android.nfc.FormatException;
 import android.nfc.NdefMessage;
+import android.nfc.NdefRecord;
 import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.os.Bundle;
@@ -20,6 +21,7 @@ import android.view.ViewGroup;
 
 import com.kbiz.highsocietycheckout.data.StatusViewModel;
 import com.kbiz.highsocietycheckout.data.TagContent;
+import com.kbiz.highsocietycheckout.databinding.FragmentInitializeTagBinding;
 
 import java.io.IOException;
 
@@ -31,8 +33,11 @@ public class FragmentInitializeTag extends Fragment implements NFCReactor {
 
     // TODO: Rename and change types of parameters
     private NFCHandler nfcHandler;
+    private FragmentInitializeTagBinding binding;
+
     private StatusViewModel statusViewModel;
     private NFCHandler.NfcIntentHandler nfcIntentHandler;
+    private String userData;
 
 
     public FragmentInitializeTag() {
@@ -45,7 +50,6 @@ public class FragmentInitializeTag extends Fragment implements NFCReactor {
 
         nfcHandler = NFCHandler.getInstance();
         statusViewModel = new ViewModelProvider(requireActivity()).get(StatusViewModel.class);
-
         nfcIntentHandler=new NFCHandler.NfcIntentHandler() {
             @Override
             public void onNDEFDiscovered(Tag tag) {
@@ -54,8 +58,7 @@ public class FragmentInitializeTag extends Fragment implements NFCReactor {
 
             @Override
             public void onNDEFlessDiscovered(Tag tag) {
-                statusViewModel.setStatusText("InitTag:Empty Tag discovered");
-//                NavHostFragment.findNavController(FragmentInitializeTag.this).navigate(R.id.action_fragmentInitializeTag_to_fragmentConfirm);
+                handleNDEFLess(tag);
             }
 
             @Override
@@ -84,6 +87,14 @@ public class FragmentInitializeTag extends Fragment implements NFCReactor {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        // Retrieve arguments
+        if (getArguments() != null) {
+            userData = getArguments().getString("regData");
+            // Use regData as needed
+        }
+        // Inflate the layout for this fragment using view binding
+        binding = FragmentInitializeTagBinding.inflate(inflater, container, false);
+        statusViewModel = new ViewModelProvider(requireActivity()).get(StatusViewModel.class);
 
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_initialize_tag, container, false);
@@ -95,7 +106,48 @@ public class FragmentInitializeTag extends Fragment implements NFCReactor {
         super.onViewCreated(view, savedInstanceState);
     }
 
+    private void handleNDEFLess(Tag tag) {
+        statusViewModel.setStatusText("InitTag: Tag found! formatting ...");
+        try {
+            nfcHandler.formatTagNDEF(tag, userData);
+        } catch (IOException e) {
+            Log.e("LOK_ERR", e.getMessage()+"\n\n");
+            e.printStackTrace();
+            statusViewModel.setStatusText("Error: "+e.getMessage());
+        } catch (FormatException e) {
+            Log.e("LOK_ERR", e.getMessage()+"\n\n");
+            e.printStackTrace();
+            statusViewModel.setStatusText("Error: "+e.getMessage());
+        }
+    }
+
     private void handleNdefDiscovered(Tag tag) {
+        Ndef ndef = Ndef.get(tag);
+        if (ndef == null) {
+            throw new RuntimeException("Cannot initialize NDEF on this tag");
+        }
+        try {
+            ndef.connect();
+            NdefMessage ndefMessage = ndef.getNdefMessage();
+            ndef.close();
+
+            TagContent tagContent = new ViewModelProvider(requireActivity()).get(TagContent.class);
+            tagContent.setnDefRecords(nfcHandler.extractTextRecordsFromNdefMessage(ndefMessage));
+
+            if (ndefMessage == null || tagContent.isEmpty()) {
+                NdefRecord hash=nfcHandler.createHashRecord(this.userData);
+                ndefMessage = new NdefMessage(hash);
+                nfcHandler.writeNdefMessage(tag,ndefMessage);
+                Log.d("LOK", "hash was written: "+hash);
+
+                ((MainActivity) getContext()).runOnMainThread(() -> {
+                    NavHostFragment.findNavController(FragmentInitializeTag.this).navigate(R.id.action_fragmentInitializeTag_to_fragmentHarvest);
+                });
+            }
+        } catch (IOException | FormatException e) {
+            Log.e("FragmentScan", "Error processing tag: " + e.getMessage(), e);
+            statusViewModel.setStatusText("Error processing tag: " + e.getMessage());
+        }
     }
 
     @Override
