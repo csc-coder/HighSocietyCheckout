@@ -22,13 +22,13 @@ import android.view.ViewGroup;
 import com.kbiz.highsocietycheckout.MainActivity;
 import com.kbiz.highsocietycheckout.R;
 import com.kbiz.highsocietycheckout.data.StatusViewModel;
-import com.kbiz.highsocietycheckout.data.TagContent;
 import com.kbiz.highsocietycheckout.database.DatabaseManager;
 import com.kbiz.highsocietycheckout.databinding.FragmentInitializeTagBinding;
 import com.kbiz.highsocietycheckout.nfc.NFCHandler;
 import com.kbiz.highsocietycheckout.nfc.NFCReactor;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -117,11 +117,14 @@ public class FragmentInitializeTag extends Fragment implements NFCReactor {
         statusViewModel.setStatusText("InitTag: Tag found! formatting ...");
         try {
             nfcHandler.formatTagNDEF(tag, userHash);
-        } catch (IOException e) {
-            Log.e("LOK_ERR", e.getMessage() + "\n\n");
-            e.printStackTrace();
-            statusViewModel.setStatusText("Error: " + e.getMessage());
-        } catch (FormatException e) {
+
+            ((MainActivity) getContext()).runOnMainThread(() -> {
+                Bundle bundle = new Bundle();
+                bundle.putString("MSG", "Formatting successful. Switching to harvest.");
+                bundle.putString("TARGET", "harvest");
+                NavHostFragment.findNavController(FragmentInitializeTag.this).navigate(R.id.action_fragmentInitializeTag_to_fragmentConfirm, bundle);
+            });
+        } catch (IOException | FormatException e) {
             Log.e("LOK_ERR", e.getMessage() + "\n\n");
             e.printStackTrace();
             statusViewModel.setStatusText("Error: " + e.getMessage());
@@ -138,35 +141,58 @@ public class FragmentInitializeTag extends Fragment implements NFCReactor {
             NdefMessage ndefMessage = ndef.getNdefMessage();
             ndef.close();
 
-            TagContent tagContent = new ViewModelProvider(requireActivity()).get(TagContent.class);
-            tagContent.setnDefRecords(nfcHandler.extractTextRecordsFromNdefMessage(ndefMessage));
 
-            if (ndefMessage == null || tagContent.isEmpty()) {
-                NdefRecord hashRecord = new NdefRecord(NdefRecord.TNF_WELL_KNOWN, NdefRecord.RTD_TEXT, new byte[0], userHash.getBytes());
+            if (ndefMessage == null ) {
+                NdefRecord hashRecord = createTextRecord(userHash);
                 ndefMessage = new NdefMessage(hashRecord);
+
+                nfcHandler.formatTagNDEF(tag, userHash);
                 nfcHandler.writeNdefMessage(tag, ndefMessage);
 
                 //check if record was written to tag
-                if(userHash != nfcHandler.readFirstRecordContent(tag)){
-                    statusViewModel.setStatusText("could not read high society record. Sry.");
+                String firstRecordContent = nfcHandler.readFirstRecordContent(tag);
+                userHash="en"+userHash;
+                if ( ! userHash.equals(firstRecordContent)) {
+                    statusViewModel.setStatusText("could not read high society record after init. Try again.(" + userHash + "/" + firstRecordContent + ")");
                     return;
                 }
-                Log.d("LOK", "user hash written to tag: " + userHash);
+                Log.d("LOK", "user hash sucessfully written to tag: " + userHash);
 
                 this.dbManager.addUser(userHash);
-                Log.d("LOK", "user hash saved to database");
+                Log.d("LOK", "user hash saved to database. moving to harvest");
             } else {
-                Log.d("LOK", "tag already initialized. moving to harvest");
+                NdefRecord rec = ndefMessage.getRecords()[0];
+                Log.d("LOK", "tag already initialized:"+rec);
             }
 
             ((MainActivity) getContext()).runOnMainThread(() -> {
-                NavHostFragment.findNavController(FragmentInitializeTag.this).navigate(R.id.action_fragmentInitializeTag_to_fragmentHarvest);
+                Bundle bundle = new Bundle();
+                bundle.putString("MSG", "Formatting successful. Switching to harvest.");
+                bundle.putString("TARGET", "harvest");
+
+                Log.d("LOK", "navigating to confirm frag");
+                NavHostFragment.findNavController(FragmentInitializeTag.this).navigate(R.id.action_fragmentInitializeTag_to_fragmentConfirm, bundle);
             });
         } catch (IOException | FormatException e) {
             Log.e("FragmentScan", "Error processing tag: " + e.getMessage(), e);
             statusViewModel.setStatusText("Error processing tag: " + e.getMessage());
         }
     }
+
+    public NdefRecord createTextRecord(String content) {
+        try {
+            byte[] languageCode = "en".getBytes(StandardCharsets.US_ASCII);
+            byte[] textBytes = content.getBytes(StandardCharsets.UTF_8);
+            byte[] payload = new byte[1 + languageCode.length + textBytes.length];
+            payload[0] = (byte) languageCode.length;
+            System.arraycopy(languageCode, 0, payload, 1, languageCode.length);
+            System.arraycopy(textBytes, 0, payload, 1 + languageCode.length, textBytes.length);
+            return new NdefRecord(NdefRecord.TNF_WELL_KNOWN, NdefRecord.RTD_TEXT, new byte[0], payload);
+        } catch (Exception e) {
+            throw new RuntimeException("Error creating text record", e);
+        }
+    }
+
 
     @Override
     public void onPause() {

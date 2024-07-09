@@ -75,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
 
         dbManager = DatabaseManager.getInstance(this);
-
+        dbManager.open();
         checkAndCreateTables();
 
         // Add sample data (for demonstration)
@@ -109,7 +109,12 @@ public class MainActivity extends AppCompatActivity {
     protected void onResumeFragments() {
         super.onResumeFragments();
         // Enable foreground dispatch
-        nfcHandler.enableForegroundDispatch();
+        try{
+            nfcHandler.enableForegroundDispatch();
+        } catch (IllegalStateException e){
+            /*NOOP*/
+            Log.d("LOK_MAINACT","snag with nfc foregrounddispatchDisablement. can be ignored");
+        }
         // Optionally enable reader mode
         nfcHandler.enableReaderMode();
     }

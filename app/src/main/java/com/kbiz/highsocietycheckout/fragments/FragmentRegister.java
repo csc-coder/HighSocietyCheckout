@@ -40,12 +40,9 @@ public class FragmentRegister extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         // Set up the click listener for the OK button
-        binding.buttonOk.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Call a method when the OK button is pressed
-                onRegisterNowPressed();
-            }
+        binding.buttonOk.setOnClickListener(v -> {
+            // Call a method when the OK button is pressed
+            onRegisterNowPressed();
         });
 
     }

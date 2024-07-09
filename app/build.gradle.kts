@@ -31,6 +31,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        dataBinding = true
     }
 }
 
@@ -41,6 +42,9 @@ dependencies {
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
     implementation("com.lambdapioneer.argon2kt:argon2kt:1.5.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.4.0")
+    implementation("androidx.fragment:fragment-ktx:1.4.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

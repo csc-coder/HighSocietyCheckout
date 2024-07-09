@@ -1,123 +1,133 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    style="@style/GreenButton"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#000000"
-    android:padding="16dp"
-    tools:context=".fragments.FragmentHarvest">
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <TextView
-        android:id="@+id/textViewAvailableAmount"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="Available this month: XXg"
-        android:textColor="#D4AF37"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 
-    <EditText
-        android:id="@+id/editTextAmountToTake"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:hint="Enter amount to take (g)"
-        android:inputType="number"
-        android:minHeight="48dp"
-        android:textColor="#FFFFFF"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textViewAvailableAmount" />
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="harvestModel"
+            type="com.kbiz.highsocietycheckout.data.HarvestViewModel" />
+    </data>
 
-    <GridLayout
-        android:id="@+id/gridLayoutAmounts"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:alignmentMode="alignMargins"
-        android:columnCount="2"
-        android:columnOrderPreserved="false"
-        android:rowCount="2"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/editTextAmountToTake">
+    <androidx.constraintlayout.widget.ConstraintLayout
+        style="@style/GreenButton"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#000000"
+        android:padding="16dp"
+        tools:context=".fragments.FragmentHarvest">
 
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/button1g"
-            style="@style/GreenButton"
+        <TextView
+            android:id="@+id/textViewAvailableAmount"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_columnWeight="1"
-            android:layout_margin="4dp"
-            android:background="@drawable/button_background"
-            android:text="@string/_1g" />
+            android:gravity="center"
+            android:text="@{harvestModel.availAmount.intValue()}"
+            android:textColor="#D4AF37"
+            android:textSize="18sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/button5g"
-            style="@style/GreenButton"
+        <TextView
+            android:id="@+id/editTextAmountToTake"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_columnWeight="1"
-            android:layout_margin="4dp"
-            android:background="@drawable/button_background"
-            android:text="5g" />
+            android:layout_marginTop="24dp"
+            android:minHeight="48dp"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:text="@{harvestModel.harvestAmount.intValue()}"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/textViewAvailableAmount" />
 
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/button10g"
-            style="@style/GreenButton"
+        <GridLayout
+            android:id="@+id/gridLayoutAmounts"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_columnWeight="1"
-            android:layout_margin="4dp"
-            android:background="@drawable/button_background"
-            android:text="10g" />
+            android:layout_marginTop="16dp"
+            android:alignmentMode="alignMargins"
+            android:columnCount="2"
+            android:columnOrderPreserved="false"
+            android:rowCount="2"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/editTextAmountToTake">
 
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/button25g"
-            style="@style/GreenButton"
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/button1g"
+                style="@style/GreenButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:layout_margin="4dp"
+                android:background="@drawable/button_background"
+                android:text="@string/_1g" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/button5g"
+                style="@style/GreenButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:layout_margin="4dp"
+                android:background="@drawable/button_background"
+                android:text="5g" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/button10g"
+                style="@style/GreenButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:layout_margin="4dp"
+                android:background="@drawable/button_background"
+                android:text="10g" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/button25g"
+                style="@style/GreenButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:layout_margin="4dp"
+                android:background="@drawable/button_background"
+                android:text="25g" />
+        </GridLayout>
+
+        <LinearLayout
+            android:id="@+id/linearLayoutResetHarvest"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_columnWeight="1"
-            android:layout_margin="4dp"
-            android:background="@drawable/button_background"
-            android:text="25g" />
-    </GridLayout>
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/gridLayoutAmounts">
 
-    <LinearLayout
-        android:id="@+id/linearLayoutResetHarvest"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/gridLayoutAmounts">
+            <Button
+                android:id="@+id/buttonReset"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:layout_weight="0.5"
+                android:background="@drawable/button_background"
+                android:text="Reset" />
 
-        <Button
-            android:id="@+id/buttonReset"
-            style="?android:attr/buttonBarButtonStyle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_margin="4dp"
-            android:layout_weight="0.5"
-            android:background="@drawable/button_background"
-            android:text="Reset" />
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/buttonHarvest"
+                style="@style/GreenButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_background"
+                android:text="Ernte :D" />
+        </LinearLayout>
 
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/buttonHarvest"
-            style="@style/GreenButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_margin="4dp"
-            android:layout_weight="1"
-            android:background="@drawable/button_background"
-            android:text="Ernte :D" />
-    </LinearLayout>
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

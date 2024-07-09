@@ -193,6 +193,8 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
                 ndef.connect();
             }
             if (ndef.isWritable()) {
+                Log.d(TAG, "Gonna write Hash to NFC tag ...");
+
                 ndef.writeNdefMessage(message);
                 Log.d(TAG, "Hash written to the NFC tag successfully.");
             } else {
@@ -226,11 +228,9 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
             }
             NdefRecord hash = createHashRecord(payload);
             NdefMessage ndefMessage = new NdefMessage(hash);
+            Log.d(TAG, "formatting tag with message:"+ndefMessage);
             ndefFormatable.format(ndefMessage);
             Log.d(TAG, "Tag formatted and message written.");
-        } catch (Exception e) {
-            Log.e(TAG, "Error formatting tag", e);
-            result = "ERR:" + e.getMessage() + "\n" + Arrays.toString(e.getStackTrace());
         } finally {
             try {
                 if (ndefFormatable != null) {
@@ -336,14 +336,24 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
             throw new FormatException("Tag is not NDEF formatted");
         }
 
+        if (!ndef.isConnected()) {
+            ndef.connect();
+        }
         NdefMessage ndefMessage = ndef.getNdefMessage();
+        if(ndefMessage==null){
+            return "";
+        }
         NdefRecord[] records = ndefMessage.getRecords();
+        ndef.close();
         if (records.length == 0) {
             throw new FormatException("No records found");
         }
 
         NdefRecord record = records[0];
         byte[] payload = record.getPayload();
+        if(payload==null||payload.length==0){
+            return "";
+        }
         return new String(payload, 1, payload.length - 1, StandardCharsets.UTF_8);
     }
 

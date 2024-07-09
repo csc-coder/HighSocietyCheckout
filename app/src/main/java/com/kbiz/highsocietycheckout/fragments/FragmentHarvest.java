@@ -12,26 +12,27 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.kbiz.highsocietycheckout.MainActivity;
 import com.kbiz.highsocietycheckout.R;
+import com.kbiz.highsocietycheckout.data.HarvestViewModel;
 import com.kbiz.highsocietycheckout.data.StatusViewModel;
-import com.kbiz.highsocietycheckout.data.TagContent;
 import com.kbiz.highsocietycheckout.databinding.FragmentHarvestBinding;
-import com.kbiz.highsocietycheckout.databinding.FragmentRegisterBinding;
 import com.kbiz.highsocietycheckout.nfc.NFCHandler;
 import com.kbiz.highsocietycheckout.nfc.NFCReactor;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class FragmentHarvest extends Fragment implements NFCReactor {
-    private int amount;
+    private HarvestViewModel amount;
     private static final int maxAmount = 50;
 
     private NFCHandler nfcHandler;
@@ -39,6 +40,7 @@ public class FragmentHarvest extends Fragment implements NFCReactor {
 
     private StatusViewModel statusViewModel;
     private NFCHandler.NfcIntentHandler nfcIntentHandler;
+    private HarvestViewModel harvestViewModel;
 
     public FragmentHarvest() {
         // Required empty public constructor
@@ -48,7 +50,7 @@ public class FragmentHarvest extends Fragment implements NFCReactor {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         nfcHandler = NFCHandler.getInstance();
-
+        amount = new ViewModelProvider(requireActivity()).get(HarvestViewModel.class);
         statusViewModel = new ViewModelProvider(requireActivity()).get(StatusViewModel.class);
         nfcIntentHandler=new NFCHandler.NfcIntentHandler() {
             @Override
@@ -85,12 +87,10 @@ public class FragmentHarvest extends Fragment implements NFCReactor {
             NdefMessage ndefMessage = ndef.getNdefMessage();
             ndef.close();
 
-            TagContent tagContent = new ViewModelProvider(requireActivity()).get(TagContent.class);
-            tagContent.setnDefRecords(nfcHandler.extractTextRecordsFromNdefMessage(ndefMessage));
+            ArrayList<String> recs = nfcHandler.extractTextRecordsFromNdefMessage(ndefMessage);
 
-            if (ndefMessage == null || tagContent.isEmpty()) {
+            if (ndefMessage == null || recs.isEmpty()) {
                 statusViewModel.setStatusText("Error processing tag. Please re-init tag" );
-                Log.d("LOK", "Error processing tag. Please re-init tag");
 
                 ((MainActivity) getContext()).runOnMainThread(() -> {
                     NavHostFragment.findNavController(FragmentHarvest.this).navigate(R.id.action_fragmentHarvest_to_fragmentScan);
@@ -107,7 +107,10 @@ public class FragmentHarvest extends Fragment implements NFCReactor {
         // Inflate the layout for this fragment using view binding
         binding = FragmentHarvestBinding.inflate(inflater, container, false);
         statusViewModel = new ViewModelProvider(requireActivity()).get(StatusViewModel.class);
-
+        harvestViewModel = new ViewModelProvider(this).get(HarvestViewModel.class);
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_harvest, container, false);
+        binding.setHarvestModel(harvestViewModel);
+        binding.setLifecycleOwner(this);
         return binding.getRoot();
     }
 
@@ -116,23 +119,36 @@ public class FragmentHarvest extends Fragment implements NFCReactor {
         super.onViewCreated(view, savedInstanceState);
 
         // Set up the click listener for the OK button
-        binding.button1g.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                handleAmountBtn(1);
-            }
-        });
+        binding.button1g.setOnClickListener(v -> handleAmountBtn(1));
+        binding.button5g.setOnClickListener(v -> handleAmountBtn(5));
+        binding.button10g.setOnClickListener(v -> handleAmountBtn(10));
+        binding.button25g.setOnClickListener(v -> handleAmountBtn(25));
+        binding.buttonHarvest.setOnClickListener(v -> handleHarvestBtn());
+        binding.buttonReset.setOnClickListener(v -> handleResetBtn());
+
+    }
+
+    private void handleResetBtn() {
+        this.amount.setHarvestAmount(0);
+        this.amount.setAvailAmount(0);
+    }
+
+    private void handleHarvestBtn() {
 
     }
 
     private void handleAmountBtn(int amountToAdd) {
-        int newAmount=this.amount+amountToAdd;
-        newAmount = checkNewAmount(newAmount);
-
+        int newAmount=this.amount.getHarvestAmount().getValue()+amountToAdd;
+        this.amount.setHarvestAmount( fixNewAmount(newAmount));
     }
 
-    private int checkNewAmount(int newAmount){
-
+    private int fixNewAmount(int newAmount){
+        if(newAmount > maxAmount){
+            return maxAmount;
+        }
+        if(newAmount<0){
+            return 0;
+        }
         return newAmount;
     }
     public void handleNFCIntent(Intent intent) {

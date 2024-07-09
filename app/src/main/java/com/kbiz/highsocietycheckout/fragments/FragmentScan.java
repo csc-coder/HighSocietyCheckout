@@ -14,7 +14,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
@@ -23,13 +22,13 @@ import androidx.navigation.fragment.NavHostFragment;
 import com.kbiz.highsocietycheckout.MainActivity;
 import com.kbiz.highsocietycheckout.R;
 import com.kbiz.highsocietycheckout.data.StatusViewModel;
-import com.kbiz.highsocietycheckout.data.TagContent;
 import com.kbiz.highsocietycheckout.database.DatabaseManager;
 import com.kbiz.highsocietycheckout.databinding.FragmentScanBinding;
 import com.kbiz.highsocietycheckout.nfc.NFCHandler;
 import com.kbiz.highsocietycheckout.nfc.NFCReactor;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class FragmentScan extends Fragment implements NFCReactor {
 
@@ -94,16 +93,15 @@ public class FragmentScan extends Fragment implements NFCReactor {
             NdefMessage ndefMessage = ndef.getNdefMessage();
             ndef.close();
 
-            TagContent tagContent = new ViewModelProvider(requireActivity()).get(TagContent.class);
-            tagContent.setnDefRecords(nfcHandler.extractTextRecordsFromNdefMessage(ndefMessage));
+            ArrayList<String> records = nfcHandler.extractTextRecordsFromNdefMessage(ndefMessage);
 
-            if (ndefMessage == null || tagContent.isEmpty()) {
+            if (ndefMessage == null || records.isEmpty()) {
                 Log.d("LOK", "empty tag found, switching to register frag");
                 ((MainActivity) getContext()).runOnMainThread(
                         () -> NavHostFragment.findNavController(this).navigate(R.id.action_fragmentScan_to_fragmentRegister));
             } else {
                 //check if tag has hash and if its in the db
-                String firstRecord = tagContent.getnDefRecords().get(0);
+                String firstRecord = records.get(0);
                 if ( ! isValidRecord(firstRecord)) {
                     statusViewModel.setStatusText("invalid tag. cant match hash or tag is empty:"+firstRecord);
                     return;
@@ -125,7 +123,7 @@ public class FragmentScan extends Fragment implements NFCReactor {
             return false;
         }
 
-        if( ! firstRecord.startsWith(HASH_PREFIX)){
+        if( ! firstRecord.substring(2).startsWith(HASH_PREFIX)){
             statusViewModel.setStatusText("record from tag does not start with our prefix:"+firstRecord);
             return false;
         }
