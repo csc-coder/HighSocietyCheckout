@@ -3,7 +3,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
-
     <data>
         <import type="android.view.View" />
         <variable
@@ -12,7 +11,6 @@
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        style="@style/GreenButton"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#000000"
@@ -24,7 +22,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="@{harvestModel.availAmount.intValue()}"
+            android:text="@{String.valueOf(harvestModel.availAmount)}"
             android:textColor="#D4AF37"
             android:textSize="18sp"
             app:layout_constraintEnd_toEndOf="parent"
@@ -32,14 +30,14 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/editTextAmountToTake"
+            android:id="@+id/textViewAmountToTake"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:minHeight="48dp"
             android:textColor="#FFFFFF"
             android:textSize="18sp"
-            android:text="@{harvestModel.harvestAmount.intValue()}"
+            android:text="@{String.valueOf(harvestModel.harvestAmount)}"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/textViewAvailableAmount" />
@@ -55,7 +53,7 @@
             android:rowCount="2"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/editTextAmountToTake">
+            app:layout_constraintTop_toBottomOf="@id/textViewAmountToTake">
 
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/button1g"
