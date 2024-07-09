@@ -1,5 +1,7 @@
 package com.kbiz.highsocietycheckout.fragments;
 
+import static com.kbiz.highsocietycheckout.fragments.FragmentRegister.HASH_PREFIX;
+
 import android.content.Intent;
 import android.nfc.FormatException;
 import android.nfc.NdefMessage;
@@ -22,6 +24,7 @@ import com.kbiz.highsocietycheckout.MainActivity;
 import com.kbiz.highsocietycheckout.R;
 import com.kbiz.highsocietycheckout.data.StatusViewModel;
 import com.kbiz.highsocietycheckout.data.TagContent;
+import com.kbiz.highsocietycheckout.database.DatabaseManager;
 import com.kbiz.highsocietycheckout.databinding.FragmentScanBinding;
 import com.kbiz.highsocietycheckout.nfc.NFCHandler;
 import com.kbiz.highsocietycheckout.nfc.NFCReactor;
@@ -99,7 +102,13 @@ public class FragmentScan extends Fragment implements NFCReactor {
                 ((MainActivity) getContext()).runOnMainThread(
                         () -> NavHostFragment.findNavController(this).navigate(R.id.action_fragmentScan_to_fragmentRegister));
             } else {
-                Log.d("LOK", "filled tag found, switching to harvest frag");
+                //check if tag has hash and if its in the db
+                String firstRecord = tagContent.getnDefRecords().get(0);
+                if ( ! isValidRecord(firstRecord)) {
+                    statusViewModel.setStatusText("invalid tag. cant match hash or tag is empty:"+firstRecord);
+                    return;
+                }
+                Log.d("LOK", "initialized tag found, switching to harvest");
                 ((MainActivity) getContext()).runOnMainThread(
                         () -> NavHostFragment.findNavController(this).navigate(R.id.action_fragmentScan_to_fragmentHarvest));
             }
@@ -108,6 +117,26 @@ public class FragmentScan extends Fragment implements NFCReactor {
             Log.e("FragmentScan", "Error processing tag: " + e.getMessage(), e);
             statusViewModel.setStatusText("Error processing tag: " + e.getMessage());
         }
+    }
+
+    private boolean isValidRecord(String firstRecord) {
+        if(firstRecord == null || firstRecord.isEmpty()){
+            statusViewModel.setStatusText("record from tag is empty or does not exist");
+            return false;
+        }
+
+        if( ! firstRecord.startsWith(HASH_PREFIX)){
+            statusViewModel.setStatusText("record from tag does not start with our prefix:"+firstRecord);
+            return false;
+        }
+
+        //check if db contains the hash
+        if( ! DatabaseManager.getInstance().userHashExists(firstRecord)){
+            statusViewModel.setStatusText("hash cant be found in user table: "+firstRecord);
+            return false;
+        }
+
+        return true;
     }
 
     @Override

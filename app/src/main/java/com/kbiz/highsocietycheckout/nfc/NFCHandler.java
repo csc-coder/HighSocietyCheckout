@@ -15,7 +15,6 @@ import android.nfc.tech.NdefFormatable;
 import android.os.Bundle;
 import android.util.Log;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -44,7 +43,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
     private NfcIntentHandler intentHandler;
     private final StatusViewModel statusViewModel;
 
-    public NFCHandler(Context context, StatusViewModel statusViewModel) {
+    private NFCHandler(Context context, StatusViewModel statusViewModel) {
         this.context = new WeakReference<>(context);
         nfcAdapter = NfcAdapter.getDefaultAdapter(context);
         this.statusViewModel = statusViewModel;
@@ -105,7 +104,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
 
 
     public void disableReaderMode() {
-        MainActivity activity=getMainActivity();
+        MainActivity activity = getMainActivity();
         if (nfcAdapter == null || activity == null) {
             return;
         }
@@ -140,7 +139,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
 
     @Override
     public void onTagDiscovered(Tag tag) {
-        if( ! (getMainActivity().getCurrentFragment() instanceof NFCReactor)){
+        if (!(getMainActivity().getCurrentFragment() instanceof NFCReactor)) {
             return;
         }
         intentHandler = ((NFCReactor) getMainActivity().getCurrentFragment()).getNFCIntentHandler();
@@ -190,7 +189,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
             if (ndef == null) {
                 return;
             }
-            if( ! ndef.isConnected()){
+            if (!ndef.isConnected()) {
                 ndef.connect();
             }
             if (ndef.isWritable()) {
@@ -222,10 +221,10 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
         }
 
         try {
-            if( ! ndefFormatable.isConnected()){
+            if (!ndefFormatable.isConnected()) {
                 ndefFormatable.connect();
             }
-            NdefRecord hash=createHashRecord(payload);
+            NdefRecord hash = createHashRecord(payload);
             NdefMessage ndefMessage = new NdefMessage(hash);
             ndefFormatable.format(ndefMessage);
             Log.d(TAG, "Tag formatted and message written.");
@@ -267,7 +266,13 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
         }
         return false; // Failed to make the tag read-only
     }
+
     public static NdefRecord createHashRecord(String payload) {
+        String hash = createHash(payload);
+        return new NdefRecord(NdefRecord.TNF_WELL_KNOWN, NdefRecord.RTD_TEXT, new byte[0], hash.getBytes());
+    }
+
+    public static String createHash(String payload) {
         Argon2Kt argon2Java = new Argon2Kt();
 
         byte[] passwordByteArray = payload.getBytes(StandardCharsets.UTF_8);
@@ -292,8 +297,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
         );
 
         Log.d(TAG, "payload verified: " + verificationResult);
-        return new NdefRecord(NdefRecord.TNF_WELL_KNOWN, NdefRecord.RTD_TEXT, new byte[0], hashResult.encodedOutputAsString().getBytes());
-
+        return hashResult.encodedOutputAsString();
     }
 
     public interface NfcIntentHandler {
@@ -326,7 +330,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
         return new NdefRecord(NdefRecord.TNF_WELL_KNOWN, NdefRecord.RTD_TEXT, new byte[0], payload);
     }
 
-    public String readTextFromTag(Tag tag) throws IOException, FormatException {
+    public String readFirstRecordContent(Tag tag) throws IOException, FormatException {
         Ndef ndef = Ndef.get(tag);
         if (ndef == null) {
             throw new FormatException("Tag is not NDEF formatted");

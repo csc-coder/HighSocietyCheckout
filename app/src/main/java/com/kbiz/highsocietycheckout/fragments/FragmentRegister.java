@@ -14,10 +14,13 @@ import androidx.navigation.fragment.NavHostFragment;
 import com.kbiz.highsocietycheckout.MainActivity;
 import com.kbiz.highsocietycheckout.R;
 import com.kbiz.highsocietycheckout.data.StatusViewModel;
+import com.kbiz.highsocietycheckout.database.DatabaseManager;
 import com.kbiz.highsocietycheckout.databinding.FragmentRegisterBinding;
+import com.kbiz.highsocietycheckout.nfc.NFCHandler;
 
-public class FragmentRegister extends Fragment  {
+public class FragmentRegister extends Fragment {
 
+    public static final String HASH_PREFIX = "HIGH_SOCIETY_";
     private FragmentRegisterBinding binding;
     private StatusViewModel statusViewModel;
 
@@ -29,7 +32,6 @@ public class FragmentRegister extends Fragment  {
         // Inflate the layout for this fragment using view binding
         binding = FragmentRegisterBinding.inflate(inflater, container, false);
         statusViewModel = new ViewModelProvider(requireActivity()).get(StatusViewModel.class);
-
         return binding.getRoot();
     }
 
@@ -65,12 +67,14 @@ public class FragmentRegister extends Fragment  {
             pob = "bad-saarow-pieskow";
         }
 
-        Toast.makeText(getContext(), "Thx! (" + dob + "," + pob + "," + id + ") please attach tag again.", Toast.LENGTH_SHORT).show();
-        final String regData=dob + "##" + pob + "##" + id;
+        Toast.makeText(getContext(), "Thx! (" + dob + "," + pob + "," + id + ")", Toast.LENGTH_SHORT).show();
+        final String regData = dob + "##" + pob + "##" + id;
+
+        final String hash = HASH_PREFIX+NFCHandler.createHash(regData);
 
         ((MainActivity) getContext()).runOnMainThread(() -> {
             Bundle bundle = new Bundle();
-            bundle.putString("regData", regData);
+            bundle.putString("regData", hash);
             NavHostFragment.findNavController(FragmentRegister.this).navigate(R.id.action_fragmentRegister_to_fragmentInitializeTag, bundle);
         });
     }

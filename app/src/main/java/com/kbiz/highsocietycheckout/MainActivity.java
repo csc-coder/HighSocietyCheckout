@@ -3,6 +3,7 @@ package com.kbiz.highsocietycheckout;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.sqlite.SQLiteDatabase;
 import android.nfc.NfcAdapter;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,18 +22,22 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.kbiz.highsocietycheckout.data.StatusViewModel;
+import com.kbiz.highsocietycheckout.database.DatabaseHelper;
+import com.kbiz.highsocietycheckout.database.DatabaseManager;
 import com.kbiz.highsocietycheckout.databinding.ActivityMainBinding;
 import com.kbiz.highsocietycheckout.fragments.FragmentStatusBar;
 import com.kbiz.highsocietycheckout.nfc.NFCHandler;
 import com.kbiz.highsocietycheckout.nfc.NFCReactor;
 
 public class MainActivity extends AppCompatActivity {
+    private static final String TAG = "LOK_MAIN_ACTVT";
     private StatusViewModel statusViewModel;
 
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
 
     private NFCHandler nfcHandler;
+    private DatabaseManager dbManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,8 +50,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         setSupportActionBar(binding.toolbar);
-        if (savedInstanceState == null) {
 
+        if (savedInstanceState == null) {
             NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment_content_main);
             if (navHostFragment == null) {
                 navHostFragment = NavHostFragment.create(R.navigation.nav_graph);
@@ -64,10 +69,34 @@ public class MainActivity extends AppCompatActivity {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.NFC) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.NFC}, NFCHandler.REQUEST_CODE_NFC);
         }
+
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
 
+        dbManager = DatabaseManager.getInstance(this);
+
+        checkAndCreateTables();
+
+        // Add sample data (for demonstration)
+//        dbManager.addUser("user1hash");
+//        dbManager.addHarvest("harvest1hash", "user1hash", System.currentTimeMillis(), 100.0);
+
+    }
+
+    private void checkAndCreateTables() {
+        SQLiteDatabase db = dbManager.getWritableDatabase();
+        DatabaseHelper dbHelper = dbManager.getDatabaseHelper();
+
+        if (!dbHelper.tableExists(db, DatabaseHelper.TABLE_USERS)) {
+            db.execSQL(DatabaseHelper.TABLE_CREATE_USERS);
+            Log.d(TAG, "Users table created.");
+        }
+
+        if (!dbHelper.tableExists(db, DatabaseHelper.TABLE_HARVESTS)) {
+            db.execSQL(DatabaseHelper.TABLE_CREATE_HARVESTS);
+            Log.d(TAG, "Harvests table created.");
+        }
     }
 
     @Override
@@ -93,6 +122,7 @@ public class MainActivity extends AppCompatActivity {
         // Optionally disable reader mode
         nfcHandler.disableReaderMode();
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
