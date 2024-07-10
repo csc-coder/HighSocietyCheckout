@@ -19,14 +19,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public static final String TABLE_CREATE_USERS =
             "CREATE TABLE IF NOT EXISTS " + TABLE_USERS + " (" +
-                    COLUMN_USER_HASH + " TEXT PRIMARY KEY );";
+                    COLUMN_USER_HASH + " TEXT NOT NULL PRIMARY KEY );";
 
     public static final String TABLE_CREATE_HARVESTS =
             "CREATE TABLE IF NOT EXISTS " + TABLE_HARVESTS + " (" +
-                    COLUMN_HARVEST_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    COLUMN_USER_HASH + " TEXT, " +
-                    COLUMN_TIME + " INTEGER, " +
-                    COLUMN_AMOUNT + " INTEGER );";
+                    COLUMN_HARVEST_ID + " TEXT NOT NULL PRIMARY KEY, " + // Updated to TEXT and NOT NULL
+                    COLUMN_USER_HASH + " TEXT NOT NULL, " +
+                    COLUMN_TIME + " INTEGER NOT NULL, " +
+                    COLUMN_AMOUNT + " INTEGER NOT NULL);";
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);

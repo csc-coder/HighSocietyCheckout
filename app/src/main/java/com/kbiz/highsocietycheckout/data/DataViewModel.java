@@ -1,10 +1,8 @@
 package com.kbiz.highsocietycheckout.data;
 
 import android.app.Application;
-import android.database.Cursor;
 import android.util.Log;
 
-import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
@@ -14,7 +12,6 @@ import com.kbiz.highsocietycheckout.data.dao.UserDAO;
 import com.kbiz.highsocietycheckout.data.entities.Harvest;
 import com.kbiz.highsocietycheckout.data.entities.User;
 import com.kbiz.highsocietycheckout.database.AppDatabase;
-import com.kbiz.highsocietycheckout.database.DatabaseHelper;
 import com.kbiz.highsocietycheckout.database.DatabaseManager;
 
 import java.util.ArrayList;
@@ -31,19 +28,18 @@ public class DataViewModel extends AndroidViewModel {
     public DataViewModel(Application application) {
         super(application);
         AppDatabase db = AppDatabase.getDatabase(application);
-        userDao = db.userDao();
-        harvestDao = db.harvestDao();
+        userDao = db.userDAO();
+        harvestDao = db.harvestDAO();
 
         DatabaseManager database=DatabaseManager.getInstance();
-
 
         allUsers = userDao.getAllUsers();
         allHarvests = harvestDao.getAllHarvests();
 
-        ArrayList<User> users = database.getUsers();
-        ArrayList<Harvest> harvests = database.getHarvests();
+        List<User> users = allUsers.getValue();
+        List<Harvest> harvests = allHarvests.getValue();
         Log.d(TAG, "got users:"+(new Gson()).toJson(users));
-        Log.d(TAG, "got harvests:"+(new Gson()).toJson(allHarvests.getValue()));
+        Log.d(TAG, "got harvests:"+(new Gson()).toJson(harvests));
 
     }
 

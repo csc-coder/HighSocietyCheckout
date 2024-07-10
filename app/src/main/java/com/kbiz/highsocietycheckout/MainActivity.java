@@ -21,8 +21,11 @@ import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
+import androidx.room.Room;
 
 import com.kbiz.highsocietycheckout.data.StatusViewModel;
+import com.kbiz.highsocietycheckout.data.dao.HarvestDAO;
+import com.kbiz.highsocietycheckout.database.AppDatabase;
 import com.kbiz.highsocietycheckout.database.DatabaseHelper;
 import com.kbiz.highsocietycheckout.database.DatabaseManager;
 import com.kbiz.highsocietycheckout.databinding.ActivityMainBinding;
@@ -40,11 +43,13 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
 
     private NFCHandler nfcHandler;
-    private DatabaseManager dbManager;
 
     private NavController navController;
     private AppBarConfiguration appBarConfiguration;
     private Toolbar toolbar;
+    private AppDatabase db;
+    private HarvestDAO harvestDAO;
+    private DatabaseManager dbManager;
 
 
     @Override
@@ -84,15 +89,26 @@ public class MainActivity extends AppCompatActivity {
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
 
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
-
-        dbManager = DatabaseManager.getInstance(this);
+        dbManager=DatabaseManager.getInstance(this);
         dbManager.open();
 
-        checkAndCreateTable(dbManager.getWritableDatabase(), DatabaseHelper.TABLE_USERS, DatabaseHelper.TABLE_CREATE_USERS, new String[]{
+        db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "harvest.db")
+                .fallbackToDestructiveMigration()
+                .build();
+        harvestDAO = db.harvestDAO();
+
+        // Update the check and create table logic if needed
+        checkAndCreateTables();
+    }
+
+    private void checkAndCreateTables() {
+        // Check and create users table
+        checkAndCreateTable(DatabaseHelper.TABLE_USERS, DatabaseHelper.TABLE_CREATE_USERS, new String[]{
                 DatabaseHelper.COLUMN_USER_HASH
         });
 
-        checkAndCreateTable(dbManager.getWritableDatabase(), DatabaseHelper.TABLE_HARVESTS, DatabaseHelper.TABLE_CREATE_HARVESTS, new String[]{
+        // Check and create harvests table
+        checkAndCreateTable(DatabaseHelper.TABLE_HARVESTS, DatabaseHelper.TABLE_CREATE_HARVESTS, new String[]{
                 DatabaseHelper.COLUMN_HARVEST_ID,
                 DatabaseHelper.COLUMN_USER_HASH,
                 DatabaseHelper.COLUMN_TIME,
@@ -100,8 +116,8 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    @SuppressLint("Range")
-    private void checkAndCreateTable(SQLiteDatabase db, String tableName, String createTableQuery, String[] expectedColumns) {
+    private void checkAndCreateTable(String tableName, String createTableQuery, String[] expectedColumns) {
+        SQLiteDatabase db = dbManager.getWritableDatabase();
         if (!dbManager.getDatabaseHelper().tableExists(db, tableName)) {
             db.execSQL(createTableQuery);
             Log.d(TAG, tableName + " table created.");
@@ -114,7 +130,8 @@ public class MainActivity extends AppCompatActivity {
                 // Store actual columns in a set for easy comparison
                 Set<String> actualColumns = new HashSet<>();
                 while (cursor.moveToNext()) {
-                    actualColumns.add(cursor.getString(cursor.getColumnIndex("name")));
+                    int nameIdx = cursor.getColumnIndex("name");
+                    actualColumns.add(cursor.getString(nameIdx));
                 }
 
                 // Check if all expected columns are present
