@@ -5,22 +5,19 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#000000"
-
-    tools:context=".MainActivity">
+    tools:context=".fragments.FragmentClearTag">
 
     <TextView
         android:id="@+id/textview_instruction"
-        android:layout_width="0dp"
+        android:layout_width="239dp"
         android:layout_height="wrap_content"
-        android:text="@string/scan_to_harvest"
-        android:textSize="44sp"
-        android:textColor="#D4AF37"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         android:gravity="center_horizontal"
-        android:textAlignment="center" />
-
-
+        android:text="@string/scan_to_clear"
+        android:textAlignment="center"
+        android:textColor="#D4AF37"
+        android:textSize="44sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

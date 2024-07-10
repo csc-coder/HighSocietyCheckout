@@ -1,6 +1,8 @@
 package com.kbiz.highsocietycheckout;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
@@ -8,14 +10,17 @@ import android.nfc.NfcAdapter;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
+import androidx.navigation.NavDestination;
 import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -61,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
                         .commit();
             }
         }
+
         // Load the status bar fragment
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.status_bar_container, new FragmentStatusBar())
@@ -74,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
 
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
         dbManager = DatabaseManager.getInstance(this);
         dbManager.open();
         checkAndCreateTables();
@@ -122,10 +129,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        // Disable foreground dispatch
-        nfcHandler.disableForegroundDispatch();
-        // Optionally disable reader mode
-        nfcHandler.disableReaderMode();
+            // Disable foreground dispatch
+            nfcHandler.disableForegroundDispatch();
+            // Optionally disable reader mode
+            nfcHandler.disableReaderMode();
     }
 
     @Override
@@ -135,18 +142,31 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
     public boolean onSupportNavigateUp() {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         return NavigationUI.navigateUp(navController, appBarConfiguration) || super.onSupportNavigateUp();
+    }
+
+
+
+    @SuppressLint("NonConstantResourceId")
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int itemId = item.getItemId();
+        if (itemId == R.id.action_clear_tag) {// Handle settings action
+            runOnMainThread(
+                    () -> NavHostFragment.findNavController(getCurrentFragment()).navigate(R.id.action_fragmentScan_to_fragmentClearTag));
+            return true;
+        } else if (itemId == R.id.action_db_manager) {// Handle about action
+            runOnMainThread(
+                    () -> NavHostFragment.findNavController(getCurrentFragment()).navigate(R.id.action_fragmentScan_to_fragmentDBManager));
+            return true;
+        } else if (itemId == R.id.action_show_logs) {// Handle about action
+            runOnMainThread(
+                    () -> NavHostFragment.findNavController(getCurrentFragment()).navigate(R.id.action_fragmentScan_to_fragmentShowLogs));
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override

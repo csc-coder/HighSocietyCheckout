@@ -93,19 +93,21 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
         }
         Bundle options = new Bundle();
         options.putInt(NfcAdapter.EXTRA_READER_PRESENCE_CHECK_DELAY, 250);
-        nfcAdapter.enableReaderMode(getMainActivity(), this,
-                NfcAdapter.FLAG_READER_NFC_A |
-                        NfcAdapter.FLAG_READER_NFC_B |
-                        NfcAdapter.FLAG_READER_NFC_F |
-                        NfcAdapter.FLAG_READER_NFC_V |
-                        NfcAdapter.FLAG_READER_NO_PLATFORM_SOUNDS, options);
-        statusViewModel.setStatusText("Enabled reader mode");
+        if( ! getMainActivity().isDestroyed()){
+            nfcAdapter.enableReaderMode(getMainActivity(), this,
+                    NfcAdapter.FLAG_READER_NFC_A |
+                            NfcAdapter.FLAG_READER_NFC_B |
+                            NfcAdapter.FLAG_READER_NFC_F |
+                            NfcAdapter.FLAG_READER_NFC_V |
+                            NfcAdapter.FLAG_READER_NO_PLATFORM_SOUNDS, options);
+            statusViewModel.setStatusText("Enabled reader mode");
+        }
     }
 
 
     public void disableReaderMode() {
         MainActivity activity = getMainActivity();
-        if (nfcAdapter == null || activity == null) {
+        if (nfcAdapter == null || activity == null||activity.isDestroyed()) {
             return;
         }
         getMainActivity().runOnMainThread(() -> {
@@ -133,6 +135,11 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
     }
 
     public void disableForegroundDispatch() {
+        MainActivity activity = getMainActivity();
+        if (nfcAdapter == null || activity == null||activity.isDestroyed()) {
+            return;
+        }
+
         nfcAdapter.disableForegroundDispatch(getMainActivity());
         statusViewModel.setStatusText("Disabled foreground dispatch");
     }

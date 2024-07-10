@@ -13,7 +13,7 @@
         android:layout_width="319dp"
         android:layout_height="111dp"
         android:background="@color/material_dynamic_neutral100"
-        android:textSize="18sp"
+        android:textSize="34sp"
         android:textColor="#000000"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

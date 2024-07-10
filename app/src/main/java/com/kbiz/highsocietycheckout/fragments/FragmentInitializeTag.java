@@ -179,7 +179,7 @@ public class FragmentInitializeTag extends Fragment implements NFCReactor {
         }
     }
 
-    public NdefRecord createTextRecord(String content) {
+    public static   NdefRecord createTextRecord(String content) {
         try {
             byte[] languageCode = "en".getBytes(StandardCharsets.US_ASCII);
             byte[] textBytes = content.getBytes(StandardCharsets.UTF_8);

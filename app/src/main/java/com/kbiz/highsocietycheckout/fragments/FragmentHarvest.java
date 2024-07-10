@@ -49,6 +49,7 @@ public class FragmentHarvest extends Fragment implements NFCReactor {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(false);
         nfcHandler = NFCHandler.getInstance();
         amount = new ViewModelProvider(requireActivity()).get(HarvestViewModel.class);
         statusViewModel = new ViewModelProvider(requireActivity()).get(StatusViewModel.class);

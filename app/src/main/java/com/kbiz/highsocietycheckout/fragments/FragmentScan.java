@@ -33,8 +33,8 @@ import java.util.ArrayList;
 public class FragmentScan extends Fragment implements NFCReactor {
 
     private FragmentScanBinding binding;
-    private NFCHandler nfcHandler;
     private StatusViewModel statusViewModel;
+    private NFCHandler nfcHandler;
     private NFCHandler.NfcIntentHandler nfcIntentHandler;
 
     @Override
@@ -42,12 +42,6 @@ public class FragmentScan extends Fragment implements NFCReactor {
         binding = FragmentScanBinding.inflate(inflater, container, false);
         statusViewModel = new ViewModelProvider(requireActivity()).get(StatusViewModel.class);
         nfcHandler = NFCHandler.getInstance();
-
-        if (nfcHandler.isNfcSupported() && nfcHandler.isNfcEnabled()) {
-            statusViewModel.setStatusText(getString(R.string.nfc_is_enabled));
-        } else {
-            statusViewModel.setStatusText(getString(R.string.nfc_is_not_supported_on_this_device));
-        }
 
         nfcIntentHandler = new NFCHandler.NfcIntentHandler() {
             @Override
@@ -68,7 +62,6 @@ public class FragmentScan extends Fragment implements NFCReactor {
                 // Handle tag removal if necessary
                 statusViewModel.setStatusText("Tag removed");
             }
-
             @Override
             public void onTagError(String errorMessage) {
                 statusViewModel.setStatusText("Error: " + errorMessage);
@@ -124,7 +117,7 @@ public class FragmentScan extends Fragment implements NFCReactor {
         }
 
         if( ! firstRecord.substring(2).startsWith(HASH_PREFIX)){
-            statusViewModel.setStatusText("record from tag does not start with our prefix:"+firstRecord);
+            statusViewModel.setStatusText("record from tag  does not start with our prefix:"+firstRecord);
             return false;
         }
 

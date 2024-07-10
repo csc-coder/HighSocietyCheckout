@@ -20,6 +20,15 @@
         <action
             android:id="@+id/action_fragmentScan_to_fragmentUnregister"
             app:destination="@id/fragmentUnregister" />
+        <action
+            android:id="@+id/action_fragmentScan_to_fragmentClearTag"
+            app:destination="@id/fragmentClearTag" />
+        <action
+            android:id="@+id/action_fragmentScan_to_fragmentDBManager"
+            app:destination="@id/fragmentDBManager" />
+        <action
+            android:id="@+id/action_fragmentScan_to_fragmentShowLogs"
+            app:destination="@id/fragmentShowLogs" />
     </fragment>
 
     <!-- Register Fragment -->
@@ -83,5 +92,20 @@
             android:id="@+id/action_fragmentConfirm_to_fragmentHarvest"
             app:destination="@id/fragmentHarvest" />
     </fragment>
+    <fragment
+        android:id="@+id/fragmentClearTag"
+        android:name="com.kbiz.highsocietycheckout.fragments.FragmentClearTag"
+        android:label="fragment_clear_tag"
+        tools:layout="@layout/fragment_clear_tag" />
+    <fragment
+        android:id="@+id/fragmentDBManager"
+        android:name="com.kbiz.highsocietycheckout.fragments.FragmentDBManager"
+        android:label="fragment_db_manager"
+        tools:layout="@layout/fragment_db_manager" />
+    <fragment
+        android:id="@+id/fragmentShowLogs"
+        android:name="com.kbiz.highsocietycheckout.fragments.FragmentShowLogs"
+        android:label="fragment_show_logs"
+        tools:layout="@layout/fragment_show_logs" />
 
 </navigation>
