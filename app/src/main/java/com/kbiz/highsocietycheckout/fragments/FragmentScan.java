@@ -129,8 +129,7 @@ public class FragmentScan extends Fragment implements NFCReactor {
 
             ArrayList<String> records = nfcHandler.extractTextRecordsFromNdefMessage(ndefMessage);
 
-            String firstRecord = records.get(0);
-            if (ndefMessage == null || records.isEmpty() || !isValidRecord(firstRecord)) {
+            if (ndefMessage == null || records.isEmpty() || !isValidRecord(records.get(0))) {
                 Log.d(LOK, "invalid tag found, switching to registration to fix this.");
                 ((MainActivity) getContext()).runOnMainThread(
                         () -> NavHostFragment.findNavController(this).navigate(R.id.action_fragmentScan_to_fragmentRegister));

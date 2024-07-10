@@ -233,7 +233,11 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
 
         try {
             if (!ndefFormatable.isConnected()) {
-                ndefFormatable.connect();
+                try {
+                    ndefFormatable.connect();
+                } catch (IOException e) {
+                    /*NOOP*/
+                }
             }
             NdefRecord hash = createHashRecord(payload);
             NdefMessage ndefMessage = new NdefMessage(hash);
