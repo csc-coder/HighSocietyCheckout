@@ -1,12 +1,7 @@
 package com.kbiz.highsocietycheckout.fragments;
 
-import static com.kbiz.highsocietycheckout.fragments.FragmentInitializeTag.createTextRecord;
-
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.nfc.FormatException;
-import android.nfc.NdefMessage;
-import android.nfc.NdefRecord;
 import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.os.Bundle;
@@ -19,13 +14,8 @@ import androidx.navigation.fragment.NavHostFragment;
 
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.kbiz.highsocietycheckout.MainActivity;
 import com.kbiz.highsocietycheckout.R;
@@ -34,7 +24,6 @@ import com.kbiz.highsocietycheckout.nfc.NFCHandler;
 import com.kbiz.highsocietycheckout.nfc.NFCReactor;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -65,21 +54,18 @@ public class FragmentClearTag extends Fragment implements NFCReactor {
         nfcIntentHandler = new NFCHandler.NfcIntentHandler() {
             @Override
             public void onNDEFDiscovered(Tag tag) {
-                handleNdefDiscovered(tag);
+                clearTag(tag);
             }
 
             @Override
             public void onNDEFlessDiscovered(Tag tag) {
-                statusViewModel.setStatusText("Scan:Empty Tag discovered");
-                NavController ctrl = NavHostFragment.findNavController(FragmentClearTag.this);
-                ((MainActivity) getContext()).runOnMainThread(
-                        () -> ctrl.navigate(R.id.action_fragmentScan_to_fragmentRegister));
+                clearTag(tag);
             }
 
             @Override
             public void onTagRemoved(Tag tag) {
                 // Handle tag removal if necessary
-                statusViewModel.setStatusText("Tag removed");
+                statusViewModel.setStatusText("Tag removed. Waiting ...");
             }
 
             @Override
@@ -91,7 +77,7 @@ public class FragmentClearTag extends Fragment implements NFCReactor {
         return inflater.inflate(R.layout.fragment_clear_tag, container, false);
     }
 
-    private void handleNdefDiscovered(Tag tag) {
+    private void clearTag(Tag tag) {
         try {
             Ndef ndef = Ndef.get(tag);
             if (ndef == null) {
@@ -99,30 +85,40 @@ public class FragmentClearTag extends Fragment implements NFCReactor {
             }
 
             //clear tag
-            nfcHandler.formatTagNDEF(tag, "0");
+            nfcHandler.formatTagWithEmptyMessage(tag);
 
             //check if record was written to tag
             String firstRecordContent = nfcHandler.readFirstRecordContent(tag);
             if (firstRecordContent == null || firstRecordContent.isEmpty()) {
                 statusViewModel.setStatusText("Tag cleared.");
             } else {
-                statusViewModel.setStatusText("Tag not cleared. Trying another way.");
+                statusViewModel.setStatusText("Tag not cleared. Trying to override first record");
                 if (!ndef.isConnected()) {
                     ndef.connect();
                 }
 
-                nfcHandler.writeNdefMessage(tag, nfcHandler.createNdefMessage("0"));
+                //try overwriting
+                nfcHandler.writeNdefMessage(tag, NFCHandler.createEmptyNDEFMessage());
+
                 firstRecordContent = nfcHandler.readFirstRecordContent(tag);
-                if (firstRecordContent == null || firstRecordContent.isEmpty()) {
+
+                if (firstRecordContent == null || firstRecordContent.isEmpty()|| firstRecordContent.equals("0")) {
                     statusViewModel.setStatusText("Tag cleared. Finally.");
                 } else {
-                    throw new IOException("tag not cleared. please reattach and hold very still");
+                    statusViewModel.setStatusText(" Record Content: "+firstRecordContent);
+                    throw new IOException("tag not cleared. please reattach and hold very still.");
                 }
             }
         } catch (IOException | FormatException e) {
             Log.e("FragmentScan", "Error processing tag: " + e.getMessage(), e);
             statusViewModel.setStatusText("Error processing tag: " + e.getMessage());
+            return;
         }
+
+        statusViewModel.setStatusText("Navigating to Registration");
+        NavController ctrl = NavHostFragment.findNavController(FragmentClearTag.this);
+        ((MainActivity) getContext()).runOnMainThread(
+                () -> ctrl.navigate(R.id.action_fragmentClearTag_to_fragmentRegister));
     }
 
     @Override

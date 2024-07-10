@@ -1,5 +1,9 @@
 package com.kbiz.highsocietycheckout.nfc;
 
+import static android.nfc.NdefRecord.RTD_TEXT;
+import static android.nfc.NdefRecord.TNF_WELL_KNOWN;
+import static com.kbiz.highsocietycheckout.fragments.FragmentRegister.HASH_PREFIX;
+
 import android.Manifest;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -15,18 +19,21 @@ import android.nfc.tech.NdefFormatable;
 import android.os.Bundle;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.kbiz.highsocietycheckout.MainActivity;
 import com.kbiz.highsocietycheckout.R;
 import com.kbiz.highsocietycheckout.data.StatusViewModel;
+import com.kbiz.highsocietycheckout.database.DatabaseManager;
 import com.lambdapioneer.argon2kt.Argon2Kt;
 import com.lambdapioneer.argon2kt.Argon2KtResult;
 import com.lambdapioneer.argon2kt.Argon2Mode;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -173,7 +180,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
         }
         ArrayList<String> records = new ArrayList<>();
         for (NdefRecord record : message.getRecords()) {
-            if (record.getTnf() != NdefRecord.TNF_WELL_KNOWN || !Arrays.equals(record.getType(), NdefRecord.RTD_TEXT)) {
+            if (record.getTnf() != TNF_WELL_KNOWN || !Arrays.equals(record.getType(), RTD_TEXT)) {
                 continue;
             }
 
@@ -224,7 +231,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
         }
     }
 
-    public String formatTagNDEF(Tag tag, String payload) throws IOException, FormatException {
+    private String formatTag(Tag tag, NdefMessage ndefMessage) throws IOException, FormatException {
         NdefFormatable ndefFormatable = NdefFormatable.get(tag);
         String result = "OK";
         if (ndefFormatable == null) {
@@ -235,15 +242,13 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
             if (!ndefFormatable.isConnected()) {
                 try {
                     ndefFormatable.connect();
+                    statusViewModel.setStatusText("Formatting tag with message: " + ndefMessage);
+                    ndefFormatable.format(ndefMessage);
+                    statusViewModel.setStatusText("Tag formatted successfully.");
                 } catch (IOException e) {
                     /*NOOP*/
                 }
             }
-            NdefRecord hash = createHashRecord(payload);
-            NdefMessage ndefMessage = new NdefMessage(hash);
-            statusViewModel.setStatusText("formatting tag with message:" + ndefMessage);
-            ndefFormatable.format(ndefMessage);
-            statusViewModel.setStatusText("Tag formatted and message written.");
         } finally {
             try {
                 if (ndefFormatable != null) {
@@ -252,12 +257,33 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
                 }
             } catch (Exception e) {
                 Log.e(LOK, "Error closing NDEFFormatable", e);
-                result = "ERR:" + e.getMessage() + "\n" + Arrays.toString(e.getStackTrace());
+                result = "ERR: " + e.getMessage() + "\n" + Arrays.toString(e.getStackTrace());
                 statusViewModel.setStatusText(result);
                 ndefFormatable = null;
             }
         }
         return result;
+    }
+
+    public String formatTagWithPayload(Tag tag, String payload) throws IOException, FormatException {
+        NdefRecord hashRecord = createTextRecord(payload);
+        NdefMessage ndefMessage = new NdefMessage(hashRecord);
+        return formatTag(tag, ndefMessage);
+    }
+
+    public String formatTagWithEmptyMessage(Tag tag) throws IOException, FormatException {
+        NdefMessage emptyMessage = createEmptyNDEFMessage();
+        return formatTag(tag, emptyMessage);
+    }
+
+    public static @NonNull NdefMessage createEmptyNDEFMessage() {
+        ByteBuffer buffer = ByteBuffer.allocate(1);
+
+        buffer.put(new byte[0]);
+
+        NdefRecord emptyRecord= new NdefRecord(TNF_WELL_KNOWN, RTD_TEXT, null, buffer.array());
+        NdefMessage emptyMessage = new NdefMessage(new NdefRecord[]{emptyRecord});
+        return emptyMessage;
     }
 
     private boolean makeReadOnly(Tag tag) {
@@ -284,7 +310,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
 
     public static NdefRecord createHashRecord(String payload) {
         String hash = createHash(payload);
-        return new NdefRecord(NdefRecord.TNF_WELL_KNOWN, NdefRecord.RTD_TEXT, new byte[0], hash.getBytes());
+        return new NdefRecord(TNF_WELL_KNOWN, RTD_TEXT, new byte[0], hash.getBytes());
     }
 
     public static String createHash(String payload) {
@@ -332,17 +358,13 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
     }
 
     private NdefRecord createTextRecord(String text) {
-        byte[] language = Locale.getDefault().getLanguage().getBytes(StandardCharsets.US_ASCII);
         byte[] textBytes = text.getBytes(StandardCharsets.UTF_8);
-        int languageSize = language.length;
         int textLength = textBytes.length;
-        byte[] payload = new byte[1 + languageSize + textLength];
+        byte[] payload = new byte[1 + textLength];
 
-        payload[0] = (byte) languageSize;
-        System.arraycopy(language, 0, payload, 1, languageSize);
-        System.arraycopy(textBytes, 0, payload, 1 + languageSize, textLength);
+        System.arraycopy(textBytes, 0, payload, 1, textLength);
 
-        return new NdefRecord(NdefRecord.TNF_WELL_KNOWN, NdefRecord.RTD_TEXT, new byte[0], payload);
+        return new NdefRecord(TNF_WELL_KNOWN, RTD_TEXT, new byte[0], payload);
     }
 
     public String readFirstRecordContent(Tag tag) throws IOException, FormatException {
@@ -352,7 +374,11 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
         }
 
         if (!ndef.isConnected()) {
-            ndef.connect();
+            try {
+                ndef.connect();
+            } catch (IOException e) {
+                /*NOOP*/
+            }
         }
         NdefMessage ndefMessage = ndef.getNdefMessage();
         if (ndefMessage == null) {
@@ -416,4 +442,20 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
         }
         return null;
     }
+
+
+    public boolean isValidRecord(String firstRecord) {
+        if (firstRecord == null || firstRecord.isEmpty() || firstRecord.length() < 10) {//lets assume hash is biggr than 10 chars
+            statusViewModel.setStatusText("record from tag is empty or does not exist");
+            return false;
+        }
+
+        if (!firstRecord.substring(1).startsWith(HASH_PREFIX)) {
+            statusViewModel.setStatusText("record from tag does not start with prefix: '"+HASH_PREFIX+"':" + firstRecord);
+            return false;
+        }
+
+        return true;
+    }
+
 }

@@ -1,7 +1,5 @@
 package com.kbiz.highsocietycheckout.fragments;
 
-import static com.kbiz.highsocietycheckout.fragments.FragmentRegister.HASH_PREFIX;
-
 import android.content.Intent;
 import android.nfc.FormatException;
 import android.nfc.NdefMessage;
@@ -15,7 +13,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.view.MenuProvider;
@@ -23,15 +20,11 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
 
 import com.kbiz.highsocietycheckout.MainActivity;
 import com.kbiz.highsocietycheckout.R;
 import com.kbiz.highsocietycheckout.data.StatusViewModel;
-import com.kbiz.highsocietycheckout.database.DatabaseManager;
 import com.kbiz.highsocietycheckout.databinding.FragmentScanBinding;
 import com.kbiz.highsocietycheckout.nfc.NFCHandler;
 import com.kbiz.highsocietycheckout.nfc.NFCReactor;
@@ -56,7 +49,7 @@ public class FragmentScan extends Fragment implements NFCReactor {
         nfcIntentHandler = new NFCHandler.NfcIntentHandler() {
             @Override
             public void onNDEFDiscovered(Tag tag) {
-                handleNdefDiscovered(tag);
+                determineNavRouteByTagStatus(tag);
             }
 
             @Override
@@ -117,7 +110,7 @@ public class FragmentScan extends Fragment implements NFCReactor {
     }
 
 
-    private void handleNdefDiscovered(Tag tag) {
+    private void determineNavRouteByTagStatus(Tag tag) {
         try {
             Ndef ndef = Ndef.get(tag);
             if (ndef == null) {
@@ -129,7 +122,7 @@ public class FragmentScan extends Fragment implements NFCReactor {
 
             ArrayList<String> records = nfcHandler.extractTextRecordsFromNdefMessage(ndefMessage);
 
-            if (ndefMessage == null || records.isEmpty() || !isValidRecord(records.get(0))) {
+            if (ndefMessage == null || records.isEmpty() || !nfcHandler.isValidRecord(records.get(0))) {
                 Log.d(LOK, "invalid tag found, switching to registration to fix this.");
                 ((MainActivity) getContext()).runOnMainThread(
                         () -> NavHostFragment.findNavController(this).navigate(R.id.action_fragmentScan_to_fragmentRegister));
@@ -144,26 +137,6 @@ public class FragmentScan extends Fragment implements NFCReactor {
             Log.e(LOK, "Error processing tag: " + e.getMessage(), e);
             statusViewModel.setStatusText("Error processing tag: " + e.getMessage());
         }
-    }
-
-    private boolean isValidRecord(String firstRecord) {
-        if (firstRecord == null || firstRecord.isEmpty() || firstRecord.length() < 10) {//lets assume hash is biggr than 10 chars
-            statusViewModel.setStatusText("record from tag is empty or does not exist");
-            return false;
-        }
-
-        if (!firstRecord.substring(2).startsWith(HASH_PREFIX)) {
-            statusViewModel.setStatusText("record from tag  does not start with our prefix:" + firstRecord);
-            return false;
-        }
-
-        //check if db contains the hash
-        if (!DatabaseManager.getInstance().userHashExists(firstRecord)) {
-            statusViewModel.setStatusText("hash cant be found in user table: " + firstRecord);
-            return false;
-        }
-
-        return true;
     }
 
     @Override

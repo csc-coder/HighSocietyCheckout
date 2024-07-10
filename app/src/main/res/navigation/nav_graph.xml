@@ -96,7 +96,11 @@
         android:id="@+id/fragmentClearTag"
         android:name="com.kbiz.highsocietycheckout.fragments.FragmentClearTag"
         android:label="fragment_clear_tag"
-        tools:layout="@layout/fragment_clear_tag" />
+        tools:layout="@layout/fragment_clear_tag" >
+        <action
+            android:id="@+id/action_fragmentClearTag_to_fragmentRegister"
+            app:destination="@id/fragmentRegister" />
+    </fragment>
     <fragment
         android:id="@+id/fragmentDBManager"
         android:name="com.kbiz.highsocietycheckout.fragments.FragmentDBManager"

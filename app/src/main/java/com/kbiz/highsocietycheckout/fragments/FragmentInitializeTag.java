@@ -9,7 +9,6 @@ import android.nfc.tech.Ndef;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
@@ -60,7 +59,7 @@ public class FragmentInitializeTag extends Fragment implements NFCReactor {
         nfcIntentHandler = new NFCHandler.NfcIntentHandler() {
             @Override
             public void onNDEFDiscovered(Tag tag) {
-                handleNdefDiscovered(tag);
+                initTag(tag);
             }
 
             @Override
@@ -114,7 +113,7 @@ public class FragmentInitializeTag extends Fragment implements NFCReactor {
     private void handleNDEFLess(Tag tag) {
         statusViewModel.setStatusText("InitTag: Tag found! formatting ...");
         try {
-            nfcHandler.formatTagNDEF(tag, userHash);
+            nfcHandler.formatTagWithPayload(tag, userHash);
 
             ((MainActivity) getContext()).runOnMainThread(() -> {
                 Bundle bundle = new Bundle();
@@ -129,7 +128,7 @@ public class FragmentInitializeTag extends Fragment implements NFCReactor {
         }
     }
 
-    private void handleNdefDiscovered(Tag tag) {
+    private void initTag(Tag tag) {
         Ndef ndef = Ndef.get(tag);
         if (ndef == null) {
             throw new RuntimeException("Cannot initialize NDEF on this tag");
@@ -139,15 +138,13 @@ public class FragmentInitializeTag extends Fragment implements NFCReactor {
             NdefMessage ndefMessage = ndef.getNdefMessage();
             ndef.close();
 
+            if (ndefMessage == null || ! nfcHandler.isValidRecord(nfcHandler.extractTextRecordsFromNdefMessage(ndefMessage).get(0))) {
 
-            if (ndefMessage == null) {
-
-                nfcHandler.formatTagNDEF(tag, userHash);
+                nfcHandler.formatTagWithPayload(tag, userHash);
                 nfcHandler.writeNdefMessage(tag, nfcHandler.createNdefMessage(userHash));
 
                 //check if record was written to tag
                 String firstRecordContent = nfcHandler.readFirstRecordContent(tag);
-                userHash = "en" + userHash;
                 if (!userHash.equals(firstRecordContent)) {
                     statusViewModel.setStatusText("could not read high society record after init. Try again.(" + userHash + "/" + firstRecordContent + ")");
                     return;
@@ -161,7 +158,7 @@ public class FragmentInitializeTag extends Fragment implements NFCReactor {
                     statusViewModel.setStatusText("user hash already registered.");
                 }
             } else {
-                NdefRecord rec = ndefMessage.getRecords()[0];
+                String rec = nfcHandler.extractTextRecordsFromNdefMessage(ndefMessage).get(0) ;
                 statusViewModel.setStatusText( "tag already initialized:" + rec);
             }
 
@@ -176,21 +173,6 @@ public class FragmentInitializeTag extends Fragment implements NFCReactor {
             statusViewModel.setStatusText("Error processing tag: " + e.getMessage());
         }
     }
-
-    public static NdefRecord createTextRecord(String content) {
-        try {
-            byte[] languageCode = "en".getBytes(StandardCharsets.US_ASCII);
-            byte[] textBytes = content.getBytes(StandardCharsets.UTF_8);
-            byte[] payload = new byte[1 + languageCode.length + textBytes.length];
-            payload[0] = (byte) languageCode.length;
-            System.arraycopy(languageCode, 0, payload, 1, languageCode.length);
-            System.arraycopy(textBytes, 0, payload, 1 + languageCode.length, textBytes.length);
-            return new NdefRecord(NdefRecord.TNF_WELL_KNOWN, NdefRecord.RTD_TEXT, new byte[0], payload);
-        } catch (Exception e) {
-            throw new RuntimeException("Error creating text record", e);
-        }
-    }
-
 
     @Override
     public void onPause() {
