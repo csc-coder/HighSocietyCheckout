@@ -25,7 +25,9 @@ import java.util.Map;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class FragmentConfirm extends Fragment {
+public class FragmentConfirm extends Fragment {    
+    public static final String LOK = "LOK_CONFIRM";
+
     private String message;
     private String target;
     private FragmentConfirmBinding binding;
@@ -43,10 +45,10 @@ public class FragmentConfirm extends Fragment {
         if (getArguments() != null) {
             message = getArguments().getString("MSG");
             target = getArguments().getString("TARGET");
-            Log.d("LOK_CONFIRM", "got arg TARGET/MSG: " + target + "/" + message);
+            Log.d(LOK, "got arg TARGET/MSG: " + target + "/" + message);
         }
 
-        Log.d("LOK_CONFIRM", "setted confirm msg: " + message);
+        Log.d(LOK, "setted confirm msg: " + message);
 
 
     }
@@ -67,7 +69,7 @@ public class FragmentConfirm extends Fragment {
         view.findViewById(R.id.buttonOk).setOnClickListener(v -> {
                     ((MainActivity) getContext()).runOnMainThread(() -> {
                         if (this.target.equals("harvest")) {
-                            Log.d("LOK_CONFIRM", "nav to harvest/with msg: " + target + "/'" + message + "'");
+                            Log.d(LOK, "nav to harvest/with msg: " + target + "/'" + message + "'");
                             NavHostFragment.findNavController(FragmentConfirm.this).navigate(R.id.action_fragmentConfirm_to_fragmentHarvest);
                         } else {
                             statusViewModel.setStatusText("unknown nav target in FragConfirm:" + R.id.action_fragmentConfirm_to_fragmentHarvest);

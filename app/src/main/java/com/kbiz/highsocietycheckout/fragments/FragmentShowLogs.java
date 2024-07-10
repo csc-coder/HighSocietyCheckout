@@ -16,6 +16,7 @@ import com.kbiz.highsocietycheckout.R;
  */
 public class FragmentShowLogs extends Fragment {
 
+    public static final String LOK = "LOK_LOGS";
 
     public FragmentShowLogs() {
         // Required empty public constructor

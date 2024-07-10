@@ -35,7 +35,7 @@ import java.util.Locale;
 public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRemovedListener {
     public static final int REQUEST_CODE_NFC = 1;
     public static final int NFC_PERMISSION_CODE = 1;
-    private static final String TAG = "LOK_NFC";
+    private static final String LOK = "LOK_NFC";
     private static NFCHandler instance;
 
     private final NfcAdapter nfcAdapter;
@@ -48,7 +48,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
         nfcAdapter = NfcAdapter.getDefaultAdapter(context);
         this.statusViewModel = statusViewModel;
         if (nfcAdapter == null) {
-            Log.e(TAG, "NFC is not supported on this device.");
+            Log.e(LOK, "NFC is not supported on this device.");
         }
         setNFCStatusText();
     }
@@ -115,7 +115,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
                 nfcAdapter.disableReaderMode(activity);
                 statusViewModel.setStatusText("Disabled reader mode");
             } catch (Exception e) {
-                Log.d("LOK", "got exception.", e);
+                Log.d(LOK, "got exception.", e);
             }
         });
     }
@@ -180,7 +180,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
             try {
                 records.add(new String(record.getPayload(), StandardCharsets.UTF_8));
             } catch (Exception e) {
-                Log.e(TAG, "Error parsing NDEF record. [" + record.getPayload() + "]", e);
+                Log.e(LOK, "Error parsing NDEF record. [" + record.getPayload() + "]", e);
                 statusViewModel.setStatusText("Error parsing NDEF record: " + e.getMessage());
             }
         }
@@ -202,15 +202,15 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
                 } catch (Exception e) { /*NOOP*/ }
             }
             if (ndef.isWritable()) {
-                Log.d(TAG, "Gonna write Hash to NFC tag ...");
+                Log.d(LOK, "Gonna write Hash to NFC tag ...");
 
                 ndef.writeNdefMessage(message);
-                Log.d(TAG, "Hash written to the NFC tag successfully.");
+                Log.d(LOK, "Hash written to the NFC tag successfully.");
             } else {
-                Log.d(TAG, "NFC tag is read-only.");
+                Log.d(LOK, "NFC tag is read-only.");
             }
         } catch (Exception e) {
-            Log.e(TAG, "Error writing NFC tag", e);
+            Log.e(LOK, "Error writing NFC tag", e);
             throw e;
         } finally {
             try {
@@ -218,7 +218,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
                     ndef.close();
                 }
             } catch (Exception e) {
-                Log.e(TAG, "Error closing NDEF", e);
+                Log.e(LOK, "Error closing NDEF", e);
                 ndef = null;
             }
         }
@@ -247,7 +247,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
                     ndefFormatable.close();
                 }
             } catch (Exception e) {
-                Log.e(TAG, "Error closing NDEFFormatable", e);
+                Log.e(LOK, "Error closing NDEFFormatable", e);
                 result = "ERR:" + e.getMessage() + "\n" + Arrays.toString(e.getStackTrace());
                 statusViewModel.setStatusText(result);
                 ndefFormatable = null;
@@ -297,8 +297,8 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
                 65536
         );
 
-        Log.d(TAG, "Raw hash: " + hashResult.rawHashAsByteArray());
-        Log.d(TAG, "Encoded string: " + hashResult.encodedOutputAsString());
+        Log.d(LOK, "Raw hash: " + hashResult.rawHashAsByteArray());
+        Log.d(LOK, "Encoded string: " + hashResult.encodedOutputAsString());
 
         // Verify the password
         boolean verificationResult = argon2Java.verify(
@@ -307,7 +307,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
                 passwordByteArray
         );
 
-        Log.d(TAG, "payload verified: " + verificationResult);
+        Log.d(LOK, "payload verified: " + verificationResult);
         return hashResult.encodedOutputAsString();
     }
 

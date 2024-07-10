@@ -40,6 +40,7 @@ import java.util.ArrayList;
  * A simple {@link Fragment} subclass.
  */
 public class FragmentClearTag extends Fragment implements NFCReactor {
+    public static final String LOK = "LOK_CLEAR_TAG";
 
     private StatusViewModel statusViewModel;
     private NFCHandler.NfcIntentHandler nfcIntentHandler;

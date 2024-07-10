@@ -41,6 +41,7 @@ import java.util.ArrayList;
 
 public class FragmentScan extends Fragment implements NFCReactor {
 
+    public static final String LOK = "LOK_SCAN";
     private FragmentScanBinding binding;
     private StatusViewModel statusViewModel;
     private NFCHandler nfcHandler;
@@ -130,18 +131,18 @@ public class FragmentScan extends Fragment implements NFCReactor {
 
             String firstRecord = records.get(0);
             if (ndefMessage == null || records.isEmpty() || !isValidRecord(firstRecord)) {
-                Log.d("LOK", "invalid tag found, switching to registration to fix this.");
+                Log.d(LOK, "invalid tag found, switching to registration to fix this.");
                 ((MainActivity) getContext()).runOnMainThread(
                         () -> NavHostFragment.findNavController(this).navigate(R.id.action_fragmentScan_to_fragmentRegister));
             } else {
                 //check if tag has hash and if its in the db
-                Log.d("LOK", "initialized tag found, switching to harvest");
+                Log.d(LOK, "initialized tag found, switching to harvest");
                 ((MainActivity) getContext()).runOnMainThread(
                         () -> NavHostFragment.findNavController(this).navigate(R.id.action_fragmentScan_to_fragmentHarvest));
             }
 
         } catch (IOException | FormatException e) {
-            Log.e("FragmentScan", "Error processing tag: " + e.getMessage(), e);
+            Log.e(LOK, "Error processing tag: " + e.getMessage(), e);
             statusViewModel.setStatusText("Error processing tag: " + e.getMessage());
         }
     }

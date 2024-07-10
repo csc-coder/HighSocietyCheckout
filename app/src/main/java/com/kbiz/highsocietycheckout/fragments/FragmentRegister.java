@@ -20,6 +20,7 @@ import com.kbiz.highsocietycheckout.nfc.NFCHandler;
 
 public class FragmentRegister extends Fragment {
 
+    public static final String LOK = "LOK_REG";
     public static final String HASH_PREFIX = "HIGH_SOCIETY_";
     private FragmentRegisterBinding binding;
     private StatusViewModel statusViewModel;
@@ -64,7 +65,7 @@ public class FragmentRegister extends Fragment {
             pob = "bad-saarow-pieskow";
         }
 
-        Toast.makeText(getContext(), "Thx! (" + dob + "," + pob + "," + id + ")", Toast.LENGTH_SHORT).show();
+//        Toast.makeText(getContext(), "Thx! (" + dob + "," + pob + "," + id + ")", Toast.LENGTH_SHORT).show();
         final String regData = dob + "##" + pob + "##" + id;
 
         final String hash = HASH_PREFIX+NFCHandler.createHash(regData);

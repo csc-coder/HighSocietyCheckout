@@ -34,6 +34,8 @@ import java.util.ArrayList;
  * A simple {@link Fragment} subclass.
  */
 public class FragmentHarvest extends Fragment implements NFCReactor {
+    public static final String LOK = "LOK_HARVEST";
+
     private HarvestViewModel amount;
     private static final int maxAmount = 50;
 
@@ -139,7 +141,7 @@ public class FragmentHarvest extends Fragment implements NFCReactor {
     }
 
     private void handleHarvestBtn() {
-
+        //Write harvest to db
     }
 
     private void handleAmountBtn(int amountToAdd) {

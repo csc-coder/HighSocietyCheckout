@@ -34,6 +34,7 @@ import java.nio.charset.StandardCharsets;
  * A simple {@link Fragment} subclass.
  */
 public class FragmentInitializeTag extends Fragment implements NFCReactor {
+    public static final String LOK = "LOK_INIT_TAG";
 
 
     // TODO: Rename and change types of parameters
@@ -82,10 +83,7 @@ public class FragmentInitializeTag extends Fragment implements NFCReactor {
     @Override
     public void onResume() {
         super.onResume();
-        if (nfcHandler.isNfcSupported() && nfcHandler.isNfcEnabled()) {
-            AppCompatActivity activity = (AppCompatActivity) getActivity();
-//            nfcHandler.enableForegroundDispatch(activity);
-        } else {
+        if (!nfcHandler.isNfcSupported() || !nfcHandler.isNfcEnabled()) {
             this.statusViewModel.setStatusText((String) getContext().getResources().getText(R.string.nfc_is_not_supported_on_this_device));
         }
     }
@@ -154,13 +152,13 @@ public class FragmentInitializeTag extends Fragment implements NFCReactor {
                     statusViewModel.setStatusText("could not read high society record after init. Try again.(" + userHash + "/" + firstRecordContent + ")");
                     return;
                 }
-                Log.d("LOK", "user hash sucessfully written to tag: " + userHash);
+                Log.d(LOK, "user hash sucessfully written to tag: " + userHash);
 
                 this.dbManager.addUser(userHash);
-                Log.d("LOK", "user hash saved to database. moving to harvest");
+                Log.d(LOK, "user hash saved to database. moving to harvest");
             } else {
                 NdefRecord rec = ndefMessage.getRecords()[0];
-                Log.d("LOK", "tag already initialized:"+rec);
+                Log.d(LOK, "tag already initialized:"+rec);
             }
 
             ((MainActivity) getContext()).runOnMainThread(() -> {
@@ -168,7 +166,7 @@ public class FragmentInitializeTag extends Fragment implements NFCReactor {
                 bundle.putString("MSG", "Formatting successful.");
                 bundle.putString("TARGET", "harvest");
 
-                Log.d("LOK", "navigating to confirm frag");
+                Log.d(LOK, "navigating to confirm frag");
                 NavHostFragment.findNavController(FragmentInitializeTag.this).navigate(R.id.action_fragmentInitializeTag_to_fragmentConfirm, bundle);
             });
         } catch (IOException | FormatException e) {

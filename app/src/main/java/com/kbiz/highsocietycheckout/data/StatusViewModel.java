@@ -20,11 +20,11 @@ public class StatusViewModel extends AndroidViewModel {
 
     public void setStatusText(String text) {
         Log.d("LOK", text);
-        try{
-            Toast.makeText(getApplication(), text, Toast.LENGTH_SHORT).show();
-        } catch(Exception e){
-            /*NOOP eat exception*/
-        }
+//        try{
+//            Toast.makeText(getApplication(), text, Toast.LENGTH_SHORT).show();
+//        } catch(Exception e){
+//            /*NOOP eat exception*/
+//        }
         statusText.postValue(text);
     }
 
