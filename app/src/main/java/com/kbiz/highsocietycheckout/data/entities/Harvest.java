@@ -11,7 +11,14 @@ public class Harvest {
     public String harvestId;
     public String userId;
     public long time;
-    public double amount;
+    public long amount;
+
+    public Harvest(@NonNull String harvestId, String userId, long time, long amount) {
+        this.harvestId = harvestId;
+        this.userId = userId;
+        this.time = time;
+        this.amount = amount;
+    }
 
     // Constructor, getters, and setters
 }

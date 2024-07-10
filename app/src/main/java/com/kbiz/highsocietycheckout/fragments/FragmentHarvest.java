@@ -22,6 +22,7 @@ import com.kbiz.highsocietycheckout.MainActivity;
 import com.kbiz.highsocietycheckout.R;
 import com.kbiz.highsocietycheckout.data.HarvestViewModel;
 import com.kbiz.highsocietycheckout.data.StatusViewModel;
+import com.kbiz.highsocietycheckout.data.dao.HarvestDAO_Impl;
 import com.kbiz.highsocietycheckout.database.DatabaseManager;
 import com.kbiz.highsocietycheckout.databinding.FragmentHarvestBinding;
 import com.kbiz.highsocietycheckout.nfc.NFCHandler;
@@ -60,6 +61,9 @@ public class FragmentHarvest extends Fragment implements NFCReactor {
         statusViewModel = new ViewModelProvider(requireActivity()).get(StatusViewModel.class);
         database= DatabaseManager.getInstance();
 
+        //dont read now. activate again when harvest btn was clicked
+        nfcHandler.disableReaderMode();
+
         nfcIntentHandler=new NFCHandler.NfcIntentHandler() {
             @Override
             public void onNDEFDiscovered(Tag tag) {
@@ -68,7 +72,7 @@ public class FragmentHarvest extends Fragment implements NFCReactor {
 
             @Override
             public void onNDEFlessDiscovered(Tag tag) {
-                statusViewModel.setStatusText("Harvst:Empty Tag discovered");
+//                statusViewModel.setStatusText("Harvst:Empty Tag discovered");
             }
 
             @Override
@@ -142,6 +146,7 @@ public class FragmentHarvest extends Fragment implements NFCReactor {
 
     private void handleHarvestBtn() {
         //Write harvest to db
+        nfcHandler.enableReaderMode();
     }
 
     private void handleAmountBtn(int amountToAdd) {

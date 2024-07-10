@@ -1,8 +1,10 @@
 package com.kbiz.highsocietycheckout;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.nfc.NfcAdapter;
 import android.os.Bundle;
@@ -27,6 +29,9 @@ import com.kbiz.highsocietycheckout.databinding.ActivityMainBinding;
 import com.kbiz.highsocietycheckout.fragments.FragmentStatusBar;
 import com.kbiz.highsocietycheckout.nfc.NFCHandler;
 import com.kbiz.highsocietycheckout.nfc.NFCReactor;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "LOK_MAIN_ACTVT";
@@ -82,29 +87,56 @@ public class MainActivity extends AppCompatActivity {
 
         dbManager = DatabaseManager.getInstance(this);
         dbManager.open();
-        checkAndCreateTables();
 
-        // Add sample data (for demonstration)
-//        dbManager.addUser("user1hash");
-//        dbManager.addHarvest("harvest1hash", "user1hash", System.currentTimeMillis(), 100.0);
+        checkAndCreateTable(dbManager.getWritableDatabase(), DatabaseHelper.TABLE_USERS, DatabaseHelper.TABLE_CREATE_USERS, new String[]{
+                DatabaseHelper.COLUMN_USER_HASH
+        });
 
+        checkAndCreateTable(dbManager.getWritableDatabase(), DatabaseHelper.TABLE_HARVESTS, DatabaseHelper.TABLE_CREATE_HARVESTS, new String[]{
+                DatabaseHelper.COLUMN_HARVEST_ID,
+                DatabaseHelper.COLUMN_USER_HASH,
+                DatabaseHelper.COLUMN_TIME,
+                DatabaseHelper.COLUMN_AMOUNT
+        });
     }
 
-    private void checkAndCreateTables() {
-        SQLiteDatabase db = dbManager.getWritableDatabase();
-        DatabaseHelper dbHelper = dbManager.getDatabaseHelper();
-
-        if (!dbHelper.tableExists(db, DatabaseHelper.TABLE_USERS)) {
-            db.execSQL(DatabaseHelper.TABLE_CREATE_USERS);
-            Log.d(TAG, "Users table created.");
+    @SuppressLint("Range")
+    private void checkAndCreateTable(SQLiteDatabase db, String tableName, String createTableQuery, String[] expectedColumns) {
+        if (!dbManager.getDatabaseHelper().tableExists(db, tableName)) {
+            db.execSQL(createTableQuery);
+            Log.d(TAG, tableName + " table created.");
+            return;
         }
 
-        if (!dbHelper.tableExists(db, DatabaseHelper.TABLE_HARVESTS)) {
-            db.execSQL(DatabaseHelper.TABLE_CREATE_HARVESTS);
-            Log.d(TAG, "Harvests table created.");
+        Cursor cursor = db.rawQuery("PRAGMA table_info(" + tableName + ")", null);
+        if (cursor != null) {
+            try {
+                // Store actual columns in a set for easy comparison
+                Set<String> actualColumns = new HashSet<>();
+                while (cursor.moveToNext()) {
+                    actualColumns.add(cursor.getString(cursor.getColumnIndex("name")));
+                }
+
+                // Check if all expected columns are present
+                boolean columnsMatch = true;
+                for (String expectedColumn : expectedColumns) {
+                    if (!actualColumns.contains(expectedColumn)) {
+                        columnsMatch = false;
+                        break;
+                    }
+                }
+
+                // If columns do not match, drop and recreate the table
+                if (!columnsMatch) {
+                    db.execSQL("DROP TABLE IF EXISTS " + tableName);
+                    db.execSQL(createTableQuery);
+                    Log.d(TAG, tableName + " table recreated due to schema mismatch.");
+                }
+            } finally {
+                cursor.close();
+            }
         }
     }
-
     @Override
     public boolean onSupportNavigateUp() {
         return NavigationUI.navigateUp(navController, appBarConfiguration)

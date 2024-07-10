@@ -30,7 +30,7 @@ public class FileHelper {
         JSONArray harvests = new JSONArray();
 
         // Export users
-        Cursor userCursor = dbManager.getAllUsers();
+        Cursor userCursor = dbManager.getUsersCursor();
         if (userCursor.moveToFirst()) {
             do {
                 JSONObject user = new JSONObject();
@@ -41,12 +41,12 @@ public class FileHelper {
         userCursor.close();
 
         // Export harvests
-        Cursor harvestCursor = dbManager.getAllHarvests();
+        Cursor harvestCursor = dbManager.getHarvestsCursor();
         if (harvestCursor.moveToFirst()) {
             do {
                 JSONObject harvest = new JSONObject();
                 harvest.put(DatabaseHelper.COLUMN_HARVEST_ID, harvestCursor.getString(harvestCursor.getColumnIndex(DatabaseHelper.COLUMN_HARVEST_ID)));
-                harvest.put(DatabaseHelper.COLUMN_USER_ID, harvestCursor.getString(harvestCursor.getColumnIndex(DatabaseHelper.COLUMN_USER_ID)));
+                harvest.put(DatabaseHelper.COLUMN_USER_HASH, harvestCursor.getString(harvestCursor.getColumnIndex(DatabaseHelper.COLUMN_USER_HASH)));
                 harvest.put(DatabaseHelper.COLUMN_TIME, harvestCursor.getLong(harvestCursor.getColumnIndex(DatabaseHelper.COLUMN_TIME)));
                 harvest.put(DatabaseHelper.COLUMN_AMOUNT, harvestCursor.getDouble(harvestCursor.getColumnIndex(DatabaseHelper.COLUMN_AMOUNT)));
                 harvests.put(harvest);

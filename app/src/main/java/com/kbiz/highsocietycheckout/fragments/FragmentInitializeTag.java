@@ -36,7 +36,6 @@ public class FragmentInitializeTag extends Fragment implements NFCReactor {
     public static final String LOK = "LOK_INIT_TAG";
 
 
-    // TODO: Rename and change types of parameters
     private NFCHandler nfcHandler;
     private FragmentInitializeTagBinding binding;
 

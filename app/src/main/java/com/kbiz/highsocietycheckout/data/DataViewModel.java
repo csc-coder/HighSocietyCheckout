@@ -33,35 +33,20 @@ public class DataViewModel extends AndroidViewModel {
         AppDatabase db = AppDatabase.getDatabase(application);
         userDao = db.userDao();
         harvestDao = db.harvestDao();
+
         DatabaseManager database=DatabaseManager.getInstance();
-        Cursor cursor = database.getWritableDatabase().query(DatabaseHelper.TABLE_USERS, null, null, null, null, null, null);
-
-        if (cursor != null) {
-            try {
-                if (cursor.moveToFirst()) {
-                    do {
-                        // Get data from cursor
-                        int userHashIndex = cursor.getColumnIndex("user_hash");
-                        String userHash = cursor.getString(userHashIndex);
-
-                        // Use the data as needed
-                        Log.d(TAG, "DB User Hash: " + userHash);
-                    } while (cursor.moveToNext());
-                }
-            } finally {
-                cursor.close(); // Always close the cursor to release resources
-            }
-        }
-        Log.d(TAG, "got users:"+cursor.getCount());
 
 
         allUsers = userDao.getAllUsers();
         allHarvests = harvestDao.getAllHarvests();
 
-        Log.d(TAG, "got users:"+(new Gson()).toJson(allUsers.getValue()));
+        ArrayList<User> users = database.getUsers();
+        ArrayList<Harvest> harvests = database.getHarvests();
+        Log.d(TAG, "got users:"+(new Gson()).toJson(users));
         Log.d(TAG, "got harvests:"+(new Gson()).toJson(allHarvests.getValue()));
 
     }
+
 
     public LiveData<List<User>> getAllUsers() {
         return allUsers;

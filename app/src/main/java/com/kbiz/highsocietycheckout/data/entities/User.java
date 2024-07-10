@@ -10,4 +10,8 @@ public class User {
     @PrimaryKey
     @NonNull
     public String userHash;
+
+    public User(@NonNull String userHash) {
+        this.userHash = userHash;
+    }
 }
