@@ -15,7 +15,7 @@ public class HarvestViewModel extends ViewModel {
         return harvestAmount;
     }
     public void setHarvestAmount(Integer amount) {
-        Log.d("LOK", ""+amount);
+        Log.d("LOK_HARVEST_MODEL", ""+amount);
         harvestAmount.postValue(amount);
     }
     public LiveData<Integer> getAvailAmount() {

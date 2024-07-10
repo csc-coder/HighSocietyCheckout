@@ -118,6 +118,7 @@ public class FragmentHarvest extends Fragment implements NFCReactor {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_harvest, container, false);
         binding.setHarvestModel(harvestViewModel);
         binding.setLifecycleOwner(this);
+
         return binding.getRoot();
     }
 
@@ -132,7 +133,6 @@ public class FragmentHarvest extends Fragment implements NFCReactor {
         binding.button25g.setOnClickListener(v -> handleAmountBtn(25));
         binding.buttonHarvest.setOnClickListener(v -> handleHarvestBtn());
         binding.buttonReset.setOnClickListener(v -> handleResetBtn());
-
     }
 
     private void handleResetBtn() {

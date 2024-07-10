@@ -140,33 +140,35 @@ public class FragmentInitializeTag extends Fragment implements NFCReactor {
             ndef.close();
 
 
-            if (ndefMessage == null ) {
+            if (ndefMessage == null) {
 
                 nfcHandler.formatTagNDEF(tag, userHash);
                 nfcHandler.writeNdefMessage(tag, nfcHandler.createNdefMessage(userHash));
 
                 //check if record was written to tag
                 String firstRecordContent = nfcHandler.readFirstRecordContent(tag);
-                userHash="en"+userHash;
-                if ( ! userHash.equals(firstRecordContent)) {
+                userHash = "en" + userHash;
+                if (!userHash.equals(firstRecordContent)) {
                     statusViewModel.setStatusText("could not read high society record after init. Try again.(" + userHash + "/" + firstRecordContent + ")");
                     return;
                 }
                 Log.d(LOK, "user hash sucessfully written to tag: " + userHash);
 
-                this.dbManager.addUser(userHash);
-                Log.d(LOK, "user hash saved to database. moving to harvest");
+                if ( ! dbManager.userHashExists(userHash)){
+                    this.dbManager.addUser(userHash);
+                    statusViewModel.setStatusText("user hash saved to database.");
+                } else{
+                    statusViewModel.setStatusText("user hash already registered.");
+                }
             } else {
                 NdefRecord rec = ndefMessage.getRecords()[0];
-                Log.d(LOK, "tag already initialized:"+rec);
+                statusViewModel.setStatusText( "tag already initialized:" + rec);
             }
 
             ((MainActivity) getContext()).runOnMainThread(() -> {
                 Bundle bundle = new Bundle();
                 bundle.putString("MSG", "Formatting successful.");
                 bundle.putString("TARGET", "harvest");
-
-                Log.d(LOK, "navigating to confirm frag");
                 NavHostFragment.findNavController(FragmentInitializeTag.this).navigate(R.id.action_fragmentInitializeTag_to_fragmentConfirm, bundle);
             });
         } catch (IOException | FormatException e) {
@@ -175,7 +177,7 @@ public class FragmentInitializeTag extends Fragment implements NFCReactor {
         }
     }
 
-    public static   NdefRecord createTextRecord(String content) {
+    public static NdefRecord createTextRecord(String content) {
         try {
             byte[] languageCode = "en".getBytes(StandardCharsets.US_ASCII);
             byte[] textBytes = content.getBytes(StandardCharsets.UTF_8);
