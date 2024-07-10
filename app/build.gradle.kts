@@ -49,7 +49,7 @@ dependencies {
     implementation("androidx.room:room-runtime:2.4.3")
     annotationProcessor("androidx.room:room-compiler:2.4.3")
     implementation("androidx.lifecycle:lifecycle-extensions:2.2.0")
-
+    implementation("com.google.code.gson:gson:2.11.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.kbiz.highsocietycheckout.R;
 import com.kbiz.highsocietycheckout.data.DataViewModel;
 import com.kbiz.highsocietycheckout.data.adapters.HarvestAdapter;
@@ -66,6 +67,7 @@ public class FragmentDBManager extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_db_manager, container, false);
+        FloatingActionButton fabBackup = view.findViewById(R.id.fab_backup);
 
         usersRecyclerView = view.findViewById(R.id.users_list);
         harvestsRecyclerView = view.findViewById(R.id.harvests_list);
@@ -85,6 +87,12 @@ public class FragmentDBManager extends Fragment {
 
         mainViewModel.getAllHarvests().observe(getViewLifecycleOwner(), harvests -> harvestAdapter.setHarvests(harvests));
 
+        fabBackup.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                backupDatabase();
+            }
+        });
         return view;
     }
 

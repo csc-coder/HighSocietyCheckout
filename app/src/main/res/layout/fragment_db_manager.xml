@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -19,7 +18,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:listitem="@layout/fragment_item_view"/>
+        tools:listitem="@layout/fragment_item_view" />
 
     <!-- Second RecyclerView for Harvests -->
     <androidx.recyclerview.widget.RecyclerView
@@ -28,11 +27,11 @@
         android:layout_height="0dp"
         android:layout_margin="16dp"
         android:background="#d0ffd0"
-        app:layout_constraintTop_toBottomOf="@id/users_list"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        tools:listitem="@layout/fragment_item_view"/>
+        app:layout_constraintTop_toBottomOf="@id/users_list"
+        tools:listitem="@layout/fragment_item_view" />
 
 
     <!-- Floating Action Button for Backup -->
@@ -43,11 +42,12 @@
         android:layout_margin="16dp"
         android:contentDescription="@string/backup"
         android:src="@android:drawable/ic_dialog_email"
-    app:layout_constraintBottom_toBottomOf="parent"
-    app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toTopOf="parent"
-    app:layout_constraintVertical_bias="1.0"
-    app:layout_constraintHorizontal_bias="1.0"
-    app:tint="@android:color/white"/>
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0"
+        app:backgroundTint="@color/black"
+        app:tint="@android:color/white" />
 </androidx.constraintlayout.widget.ConstraintLayout>
