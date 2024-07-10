@@ -56,6 +56,7 @@ public class DatabaseManager {
     public long addUser(String userHash) {
         ContentValues values = new ContentValues();
         values.put(DatabaseHelper.COLUMN_USER_HASH, userHash);
+        Log.d(TAG,"adding new user hash to db:"+userHash);
         return database.insert(DatabaseHelper.TABLE_USERS, null, values);
     }
 

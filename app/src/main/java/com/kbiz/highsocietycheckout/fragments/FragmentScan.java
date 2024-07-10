@@ -25,6 +25,7 @@ import androidx.navigation.fragment.NavHostFragment;
 import com.kbiz.highsocietycheckout.MainActivity;
 import com.kbiz.highsocietycheckout.R;
 import com.kbiz.highsocietycheckout.data.StatusViewModel;
+import com.kbiz.highsocietycheckout.database.DatabaseManager;
 import com.kbiz.highsocietycheckout.databinding.FragmentScanBinding;
 import com.kbiz.highsocietycheckout.nfc.NFCHandler;
 import com.kbiz.highsocietycheckout.nfc.NFCReactor;
@@ -122,12 +123,19 @@ public class FragmentScan extends Fragment implements NFCReactor {
 
             ArrayList<String> records = nfcHandler.extractTextRecordsFromNdefMessage(ndefMessage);
 
+            //check if db contains the hash
+
             if (ndefMessage == null || records.isEmpty() || !nfcHandler.isValidRecord(records.get(0))) {
                 Log.d(LOK, "invalid tag found, switching to registration to fix this.");
                 ((MainActivity) getContext()).runOnMainThread(
                         () -> NavHostFragment.findNavController(this).navigate(R.id.action_fragmentScan_to_fragmentRegister));
             } else {
                 //check if tag has hash and if its in the db
+                if (!DatabaseManager.getInstance().userHashExists(records.get(0))) {
+                    statusViewModel.setStatusText("hash cant be found in user table. please clear tag and register again." + records.get(0));
+                    return;
+                }
+
                 Log.d(LOK, "initialized tag found, switching to harvest");
                 ((MainActivity) getContext()).runOnMainThread(
                         () -> NavHostFragment.findNavController(this).navigate(R.id.action_fragmentScan_to_fragmentHarvest));

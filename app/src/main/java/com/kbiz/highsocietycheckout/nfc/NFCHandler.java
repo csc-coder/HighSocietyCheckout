@@ -338,7 +338,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
         );
 
         Log.d(LOK, "payload verified: " + verificationResult);
-        return hashResult.encodedOutputAsString();
+        return hashResult.encodedOutputAsString().replace("$argon2i$v=19$m=65536,t=5,p=2", "");
     }
 
     public interface NfcIntentHandler {
