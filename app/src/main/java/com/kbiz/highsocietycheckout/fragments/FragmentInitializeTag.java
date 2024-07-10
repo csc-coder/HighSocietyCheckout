@@ -120,7 +120,7 @@ public class FragmentInitializeTag extends Fragment implements NFCReactor {
 
             ((MainActivity) getContext()).runOnMainThread(() -> {
                 Bundle bundle = new Bundle();
-                bundle.putString("MSG", "Formatting successful. Switching to harvest.");
+                bundle.putString("MSG", "Formatting successful.");
                 bundle.putString("TARGET", "harvest");
                 NavHostFragment.findNavController(FragmentInitializeTag.this).navigate(R.id.action_fragmentInitializeTag_to_fragmentConfirm, bundle);
             });
@@ -143,11 +143,9 @@ public class FragmentInitializeTag extends Fragment implements NFCReactor {
 
 
             if (ndefMessage == null ) {
-                NdefRecord hashRecord = createTextRecord(userHash);
-                ndefMessage = new NdefMessage(hashRecord);
 
                 nfcHandler.formatTagNDEF(tag, userHash);
-                nfcHandler.writeNdefMessage(tag, ndefMessage);
+                nfcHandler.writeNdefMessage(tag, nfcHandler.createNdefMessage(userHash));
 
                 //check if record was written to tag
                 String firstRecordContent = nfcHandler.readFirstRecordContent(tag);
@@ -167,7 +165,7 @@ public class FragmentInitializeTag extends Fragment implements NFCReactor {
 
             ((MainActivity) getContext()).runOnMainThread(() -> {
                 Bundle bundle = new Bundle();
-                bundle.putString("MSG", "Formatting successful. Switching to harvest.");
+                bundle.putString("MSG", "Formatting successful.");
                 bundle.putString("TARGET", "harvest");
 
                 Log.d("LOK", "navigating to confirm frag");

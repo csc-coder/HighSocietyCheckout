@@ -93,7 +93,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
         }
         Bundle options = new Bundle();
         options.putInt(NfcAdapter.EXTRA_READER_PRESENCE_CHECK_DELAY, 250);
-        if( ! getMainActivity().isDestroyed()){
+        if (!getMainActivity().isDestroyed()) {
             nfcAdapter.enableReaderMode(getMainActivity(), this,
                     NfcAdapter.FLAG_READER_NFC_A |
                             NfcAdapter.FLAG_READER_NFC_B |
@@ -107,7 +107,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
 
     public void disableReaderMode() {
         MainActivity activity = getMainActivity();
-        if (nfcAdapter == null || activity == null||activity.isDestroyed()) {
+        if (nfcAdapter == null || activity == null || activity.isDestroyed()) {
             return;
         }
         getMainActivity().runOnMainThread(() -> {
@@ -136,7 +136,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
 
     public void disableForegroundDispatch() {
         MainActivity activity = getMainActivity();
-        if (nfcAdapter == null || activity == null||activity.isDestroyed()) {
+        if (nfcAdapter == null || activity == null || activity.isDestroyed()) {
             return;
         }
 
@@ -168,7 +168,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
 
     public ArrayList<String> extractTextRecordsFromNdefMessage(NdefMessage message) {
         if (message == null) {
-            Log.e(TAG, "Error parsing NDEF record. Message == null.");
+//            Log.e(TAG, "Error parsing NDEF record. Message == null.");
             return new ArrayList<>();
         }
         ArrayList<String> records = new ArrayList<>();
@@ -197,7 +197,9 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
                 return;
             }
             if (!ndef.isConnected()) {
-                ndef.connect();
+                try {
+                    ndef.connect();
+                } catch (Exception e) { /*NOOP*/ }
             }
             if (ndef.isWritable()) {
                 Log.d(TAG, "Gonna write Hash to NFC tag ...");
@@ -235,17 +237,19 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
             }
             NdefRecord hash = createHashRecord(payload);
             NdefMessage ndefMessage = new NdefMessage(hash);
-            Log.d(TAG, "formatting tag with message:"+ndefMessage);
+            statusViewModel.setStatusText("formatting tag with message:" + ndefMessage);
             ndefFormatable.format(ndefMessage);
-            Log.d(TAG, "Tag formatted and message written.");
+            statusViewModel.setStatusText("Tag formatted and message written.");
         } finally {
             try {
                 if (ndefFormatable != null) {
+                    statusViewModel.setStatusText("Formatting done.");
                     ndefFormatable.close();
                 }
             } catch (Exception e) {
                 Log.e(TAG, "Error closing NDEFFormatable", e);
                 result = "ERR:" + e.getMessage() + "\n" + Arrays.toString(e.getStackTrace());
+                statusViewModel.setStatusText(result);
                 ndefFormatable = null;
             }
         }
@@ -347,7 +351,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
             ndef.connect();
         }
         NdefMessage ndefMessage = ndef.getNdefMessage();
-        if(ndefMessage==null){
+        if (ndefMessage == null) {
             return "";
         }
         NdefRecord[] records = ndefMessage.getRecords();
@@ -358,7 +362,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
 
         NdefRecord record = records[0];
         byte[] payload = record.getPayload();
-        if(payload==null||payload.length==0){
+        if (payload == null || payload.length == 0) {
             return "";
         }
         return new String(payload, 1, payload.length - 1, StandardCharsets.UTF_8);

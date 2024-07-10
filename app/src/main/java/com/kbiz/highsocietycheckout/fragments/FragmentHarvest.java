@@ -8,6 +8,7 @@ import android.nfc.tech.Ndef;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -21,6 +22,7 @@ import com.kbiz.highsocietycheckout.MainActivity;
 import com.kbiz.highsocietycheckout.R;
 import com.kbiz.highsocietycheckout.data.HarvestViewModel;
 import com.kbiz.highsocietycheckout.data.StatusViewModel;
+import com.kbiz.highsocietycheckout.database.DatabaseManager;
 import com.kbiz.highsocietycheckout.databinding.FragmentHarvestBinding;
 import com.kbiz.highsocietycheckout.nfc.NFCHandler;
 import com.kbiz.highsocietycheckout.nfc.NFCReactor;
@@ -41,6 +43,7 @@ public class FragmentHarvest extends Fragment implements NFCReactor {
     private StatusViewModel statusViewModel;
     private NFCHandler.NfcIntentHandler nfcIntentHandler;
     private HarvestViewModel harvestViewModel;
+    private DatabaseManager database;
 
     public FragmentHarvest() {
         // Required empty public constructor
@@ -49,10 +52,12 @@ public class FragmentHarvest extends Fragment implements NFCReactor {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(false);
+
         nfcHandler = NFCHandler.getInstance();
         amount = new ViewModelProvider(requireActivity()).get(HarvestViewModel.class);
         statusViewModel = new ViewModelProvider(requireActivity()).get(StatusViewModel.class);
+        database= DatabaseManager.getInstance();
+
         nfcIntentHandler=new NFCHandler.NfcIntentHandler() {
             @Override
             public void onNDEFDiscovered(Tag tag) {
@@ -91,7 +96,7 @@ public class FragmentHarvest extends Fragment implements NFCReactor {
             ArrayList<String> recs = nfcHandler.extractTextRecordsFromNdefMessage(ndefMessage);
 
             if (ndefMessage == null || recs.isEmpty()) {
-                statusViewModel.setStatusText("Error processing tag. Please re-init tag" );
+                statusViewModel.setStatusText("Error processing tag. Please re-init." );
 
                 ((MainActivity) getContext()).runOnMainThread(() -> {
                     NavHostFragment.findNavController(FragmentHarvest.this).navigate(R.id.action_fragmentHarvest_to_fragmentScan);
@@ -107,7 +112,6 @@ public class FragmentHarvest extends Fragment implements NFCReactor {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment using view binding
         binding = FragmentHarvestBinding.inflate(inflater, container, false);
-        statusViewModel = new ViewModelProvider(requireActivity()).get(StatusViewModel.class);
         harvestViewModel = new ViewModelProvider(this).get(HarvestViewModel.class);
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_harvest, container, false);
         binding.setHarvestModel(harvestViewModel);

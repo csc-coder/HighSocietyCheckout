@@ -10,14 +10,23 @@ import android.nfc.tech.Ndef;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
+import androidx.navigation.ui.AppBarConfiguration;
+import androidx.navigation.ui.NavigationUI;
 
 import com.kbiz.highsocietycheckout.MainActivity;
 import com.kbiz.highsocietycheckout.R;
@@ -62,11 +71,42 @@ public class FragmentScan extends Fragment implements NFCReactor {
                 // Handle tag removal if necessary
                 statusViewModel.setStatusText("Tag removed");
             }
+
             @Override
             public void onTagError(String errorMessage) {
                 statusViewModel.setStatusText("Error: " + errorMessage);
             }
         };
+
+
+        // Register the MenuProvider
+        requireActivity().addMenuProvider(new MenuProvider() {
+            @Override
+            public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
+                menuInflater.inflate(R.menu.menu_main, menu);
+            }
+
+            @Override
+            public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
+                int itemId = menuItem.getItemId();
+                MainActivity activity = (MainActivity) getContext();
+                if (itemId == R.id.action_clear_tag) {// Handle settings action
+                    activity.runOnMainThread(
+                            () -> NavHostFragment.findNavController(FragmentScan.this).navigate(R.id.action_fragmentScan_to_fragmentClearTag));
+                    return true;
+                } else if (itemId == R.id.action_db_manager) {// Handle about action
+                    activity.runOnMainThread(
+                            () -> NavHostFragment.findNavController(FragmentScan.this).navigate(R.id.action_fragmentScan_to_fragmentDBManager));
+                    return true;
+                } else if (itemId == R.id.action_show_logs) {// Handle about action
+                    activity.runOnMainThread(
+                            () -> NavHostFragment.findNavController(FragmentScan.this).navigate(R.id.action_fragmentScan_to_fragmentShowLogs));
+                    return true;
+                }
+                return false;
+            }
+        }, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
+
         return binding.getRoot();
     }
 
@@ -88,17 +128,13 @@ public class FragmentScan extends Fragment implements NFCReactor {
 
             ArrayList<String> records = nfcHandler.extractTextRecordsFromNdefMessage(ndefMessage);
 
-            if (ndefMessage == null || records.isEmpty()) {
-                Log.d("LOK", "empty tag found, switching to register frag");
+            String firstRecord = records.get(0);
+            if (ndefMessage == null || records.isEmpty() || !isValidRecord(firstRecord)) {
+                Log.d("LOK", "invalid tag found, switching to registration to fix this.");
                 ((MainActivity) getContext()).runOnMainThread(
                         () -> NavHostFragment.findNavController(this).navigate(R.id.action_fragmentScan_to_fragmentRegister));
             } else {
                 //check if tag has hash and if its in the db
-                String firstRecord = records.get(0);
-                if ( ! isValidRecord(firstRecord)) {
-                    statusViewModel.setStatusText("invalid tag. cant match hash or tag is empty:"+firstRecord);
-                    return;
-                }
                 Log.d("LOK", "initialized tag found, switching to harvest");
                 ((MainActivity) getContext()).runOnMainThread(
                         () -> NavHostFragment.findNavController(this).navigate(R.id.action_fragmentScan_to_fragmentHarvest));
@@ -111,19 +147,19 @@ public class FragmentScan extends Fragment implements NFCReactor {
     }
 
     private boolean isValidRecord(String firstRecord) {
-        if(firstRecord == null || firstRecord.isEmpty()){
+        if (firstRecord == null || firstRecord.isEmpty() || firstRecord.length() < 10) {//lets assume hash is biggr than 10 chars
             statusViewModel.setStatusText("record from tag is empty or does not exist");
             return false;
         }
 
-        if( ! firstRecord.substring(2).startsWith(HASH_PREFIX)){
-            statusViewModel.setStatusText("record from tag  does not start with our prefix:"+firstRecord);
+        if (!firstRecord.substring(2).startsWith(HASH_PREFIX)) {
+            statusViewModel.setStatusText("record from tag  does not start with our prefix:" + firstRecord);
             return false;
         }
 
         //check if db contains the hash
-        if( ! DatabaseManager.getInstance().userHashExists(firstRecord)){
-            statusViewModel.setStatusText("hash cant be found in user table: "+firstRecord);
+        if (!DatabaseManager.getInstance().userHashExists(firstRecord)) {
+            statusViewModel.setStatusText("hash cant be found in user table: " + firstRecord);
             return false;
         }
 

@@ -1,26 +1,20 @@
 package com.kbiz.highsocietycheckout;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.nfc.NfcAdapter;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
-import androidx.navigation.NavDestination;
 import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -38,11 +32,15 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "LOK_MAIN_ACTVT";
     private StatusViewModel statusViewModel;
 
-    private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
 
     private NFCHandler nfcHandler;
     private DatabaseManager dbManager;
+
+    private NavController navController;
+    private AppBarConfiguration appBarConfiguration;
+    private Toolbar toolbar;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,8 +51,6 @@ public class MainActivity extends AppCompatActivity {
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
-        setSupportActionBar(binding.toolbar);
 
         if (savedInstanceState == null) {
             NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment_content_main);
@@ -76,11 +72,14 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.NFC}, NFCHandler.REQUEST_CODE_NFC);
         }
 
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
+        toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
+
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
 
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
         dbManager = DatabaseManager.getInstance(this);
         dbManager.open();
         checkAndCreateTables();
@@ -104,6 +103,12 @@ public class MainActivity extends AppCompatActivity {
             db.execSQL(DatabaseHelper.TABLE_CREATE_HARVESTS);
             Log.d(TAG, "Harvests table created.");
         }
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        return NavigationUI.navigateUp(navController, appBarConfiguration)
+                || super.onSupportNavigateUp();
     }
 
     @Override
@@ -135,39 +140,6 @@ public class MainActivity extends AppCompatActivity {
             nfcHandler.disableReaderMode();
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onSupportNavigateUp() {
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-        return NavigationUI.navigateUp(navController, appBarConfiguration) || super.onSupportNavigateUp();
-    }
-
-
-
-    @SuppressLint("NonConstantResourceId")
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        int itemId = item.getItemId();
-        if (itemId == R.id.action_clear_tag) {// Handle settings action
-            runOnMainThread(
-                    () -> NavHostFragment.findNavController(getCurrentFragment()).navigate(R.id.action_fragmentScan_to_fragmentClearTag));
-            return true;
-        } else if (itemId == R.id.action_db_manager) {// Handle about action
-            runOnMainThread(
-                    () -> NavHostFragment.findNavController(getCurrentFragment()).navigate(R.id.action_fragmentScan_to_fragmentDBManager));
-            return true;
-        } else if (itemId == R.id.action_show_logs) {// Handle about action
-            runOnMainThread(
-                    () -> NavHostFragment.findNavController(getCurrentFragment()).navigate(R.id.action_fragmentScan_to_fragmentShowLogs));
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
 
     @Override
     protected void onNewIntent(Intent intent) {

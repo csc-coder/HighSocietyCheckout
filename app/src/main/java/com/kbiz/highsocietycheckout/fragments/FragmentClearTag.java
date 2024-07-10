@@ -80,6 +80,7 @@ public class FragmentClearTag extends Fragment implements NFCReactor {
                 // Handle tag removal if necessary
                 statusViewModel.setStatusText("Tag removed");
             }
+
             @Override
             public void onTagError(String errorMessage) {
                 statusViewModel.setStatusText("Error: " + errorMessage);
@@ -97,14 +98,25 @@ public class FragmentClearTag extends Fragment implements NFCReactor {
             }
 
             //clear tag
-            nfcHandler.formatTagNDEF(tag, "");
+            nfcHandler.formatTagNDEF(tag, "0");
 
             //check if record was written to tag
             String firstRecordContent = nfcHandler.readFirstRecordContent(tag);
-            if ( firstRecordContent==null||firstRecordContent.isEmpty()) {
-                statusViewModel.setStatusText("Tag cleared, switching back to scan screen");
-            } else{
-                statusViewModel.setStatusText("Error clearing tag content: "+firstRecordContent);
+            if (firstRecordContent == null || firstRecordContent.isEmpty()) {
+                statusViewModel.setStatusText("Tag cleared.");
+            } else {
+                statusViewModel.setStatusText("Tag not cleared. Trying another way.");
+                if (!ndef.isConnected()) {
+                    ndef.connect();
+                }
+
+                nfcHandler.writeNdefMessage(tag, nfcHandler.createNdefMessage("0"));
+                firstRecordContent = nfcHandler.readFirstRecordContent(tag);
+                if (firstRecordContent == null || firstRecordContent.isEmpty()) {
+                    statusViewModel.setStatusText("Tag cleared. Finally.");
+                } else {
+                    throw new IOException("tag not cleared. please reattach and hold very still");
+                }
             }
         } catch (IOException | FormatException e) {
             Log.e("FragmentScan", "Error processing tag: " + e.getMessage(), e);
