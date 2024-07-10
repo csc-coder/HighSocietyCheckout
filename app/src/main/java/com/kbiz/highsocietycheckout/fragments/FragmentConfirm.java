@@ -69,7 +69,7 @@ public class FragmentConfirm extends Fragment {
         view.findViewById(R.id.buttonOk).setOnClickListener(v -> {
                     ((MainActivity) getContext()).runOnMainThread(() -> {
                         if (this.target.equals("harvest")) {
-                            Log.d(LOK, "nav to harvest/with msg: " + target + "/'" + message + "'");
+                            Log.d(LOK, "nav to '"+target+"' with msg: " + message + "'");
                             NavHostFragment.findNavController(FragmentConfirm.this).navigate(R.id.action_fragmentConfirm_to_fragmentHarvest);
                         } else {
                             statusViewModel.setStatusText("unknown nav target in FragConfirm:" + R.id.action_fragmentConfirm_to_fragmentHarvest);

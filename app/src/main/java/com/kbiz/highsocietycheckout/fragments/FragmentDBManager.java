@@ -1,7 +1,11 @@
 package com.kbiz.highsocietycheckout.fragments;
 
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
@@ -28,6 +32,11 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -79,4 +88,43 @@ public class FragmentDBManager extends Fragment {
         return view;
     }
 
+    private void backupDatabase() {
+        Context context = getContext();
+        if (context == null) {
+            return;
+        }
+
+        File dbFile = context.getDatabasePath("harvest.db");
+        File backupDir = new File(context.getExternalFilesDir(null), "backup");
+        if (!backupDir.exists()) {
+            backupDir.mkdirs();
+        }
+
+        File backupFile = new File(backupDir, "harvest_backup.db");
+
+        try (FileChannel src = new FileInputStream(dbFile).getChannel();
+             FileChannel dst = new FileOutputStream(backupFile).getChannel()) {
+            dst.transferFrom(src, 0, src.size());
+            sendBackupEmail(backupFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void sendBackupEmail(File backupFile) {
+        Context context = getContext();
+        if (context == null) {
+            return;
+        }
+
+        Uri contentUri = FileProvider.getUriForFile(context, context.getPackageName() + ".provider", backupFile);
+
+        Intent emailIntent = new Intent(Intent.ACTION_SEND);
+        emailIntent.setType("vnd.android.cursor.dir/email");
+        emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Database Backup");
+        emailIntent.putExtra(Intent.EXTRA_TEXT, "Attached is the backup of the database.");
+        emailIntent.putExtra(Intent.EXTRA_STREAM, contentUri);
+
+        startActivity(Intent.createChooser(emailIntent, "Send email..."));
+    }
 }
