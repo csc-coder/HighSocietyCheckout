@@ -23,7 +23,6 @@ public class DataViewModel extends AndroidViewModel {
     private final UserDAO userDao;
     private final HarvestDAO harvestDao;
 
-    private LiveData<Long> totalHarvest;
     private final LiveData<List<User>> allUsers;
     private final LiveData<List<Harvest>> allHarvests;
 
@@ -47,6 +46,12 @@ public class DataViewModel extends AndroidViewModel {
         AppDatabase.getDatabase(null);
         AppDatabase.databaseWriteExecutor.execute(() -> {
             userDao.clearAllUsers();
+        });
+    }
+    public void clearAllHarvests() {
+        AppDatabase.getDatabase(null);
+        AppDatabase.databaseWriteExecutor.execute(() -> {
+            harvestDao.clearAllHarvests();
         });
     }
 

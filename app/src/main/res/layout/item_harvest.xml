@@ -2,21 +2,33 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="8dp">
+    android:orientation="horizontal"
+    android:padding="8dp"
+    >
 
     <TextView
         android:id="@+id/textViewDate"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_weight="1"
         android:text="Harvest Date"
         android:textSize="12sp"
         android:textColor="#000000" />
 
     <TextView
-        android:id="@+id/textViewAmount"
-        android:layout_width="match_parent"
+        android:id="@+id/textViewHarvesterHash"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Harvester Hash"
+        android:textSize="12sp"
+        android:textColor="#000000" />
+
+    <TextView
+        android:id="@+id/textViewAmount"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
         android:text="Harvest Amount"
         android:textSize="12sp"
         android:textColor="#000000" />

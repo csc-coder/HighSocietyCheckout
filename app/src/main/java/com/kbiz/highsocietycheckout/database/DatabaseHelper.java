@@ -23,7 +23,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public static final String TABLE_CREATE_HARVESTS =
             "CREATE TABLE IF NOT EXISTS " + TABLE_HARVESTS + " (" +
-                    COLUMN_HARVEST_ID + " TEXT NOT NULL PRIMARY KEY, " + // Updated to TEXT and NOT NULL
+                    COLUMN_HARVEST_ID + " INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, " +
                     COLUMN_USER_HASH + " TEXT NOT NULL, " +
                     COLUMN_TIME + " INTEGER NOT NULL, " +
                     COLUMN_AMOUNT + " INTEGER NOT NULL);";

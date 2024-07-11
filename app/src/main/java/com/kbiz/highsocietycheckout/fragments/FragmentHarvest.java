@@ -24,12 +24,14 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 
+import com.google.gson.Gson;
 import com.kbiz.highsocietycheckout.MainActivity;
 import com.kbiz.highsocietycheckout.R;
 import com.kbiz.highsocietycheckout.data.HarvestViewModel;
 import com.kbiz.highsocietycheckout.data.StatusViewModel;
 import com.kbiz.highsocietycheckout.data.dao.HarvestDAO;
 import com.kbiz.highsocietycheckout.data.dao.UserDAO;
+import com.kbiz.highsocietycheckout.data.entities.Harvest;
 import com.kbiz.highsocietycheckout.data.entities.User;
 import com.kbiz.highsocietycheckout.database.AppDatabase;
 import com.kbiz.highsocietycheckout.database.DatabaseManager;
@@ -222,8 +224,17 @@ public class FragmentHarvest extends Fragment implements NFCReactor {
     }
 
     private void handleHarvestBtn() {
-        //Write harvest to db
-        nfcHandler.enableReaderMode();
+//        nfcHandler.enableReaderMode();
+        long amountToHarvest=harvestViewModel.getHarvestAmount().getValue();
+        long time=System.nanoTime();
+        Harvest harvest = new Harvest( userHash,  time, amountToHarvest);
+        AppDatabase.databaseWriteExecutor.execute(() -> {
+            harvestDAO.insert(harvest);
+        });
+        Log.d(LOK, "inserted new Harvest record: " + (new Gson()).toJson(harvest));
+        Toast.makeText(getContext(), "Congrats! you got "+amountToHarvest+"g of finest weed. Enjoy :D", Toast.LENGTH_LONG).show();
+        ((MainActivity) getContext()).runOnMainThread(() -> NavHostFragment.findNavController(FragmentHarvest.this).navigate(R.id.action_fragmentHarvest_to_fragmentScan));
+
     }
 
     private void handleAmountBtn(int amountToAdd) {
@@ -231,8 +242,8 @@ public class FragmentHarvest extends Fragment implements NFCReactor {
         newAvailAmount = Math.max(0, Math.min(newAvailAmount, 50));
         this.harvestViewModel.setAvailAmount(Math.toIntExact(newAvailAmount));
 
-        int newAmount = this.harvestViewModel.getHarvestAmount().getValue() + amountToAdd;
-        newAmount = Math.toIntExact(Math.max(0, Math.min(newAvailAmount, 50)));
+        int harvestAmount=this.harvestViewModel.getHarvestAmount().getValue();
+        int newAmount = Math.toIntExact(Math.max(0, Math.min(harvestAmount, 50)));
         this.harvestViewModel.setHarvestAmount(newAmount);
     }
 

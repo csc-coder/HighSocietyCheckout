@@ -8,10 +8,10 @@ import androidx.room.Query;
 
 @Entity(tableName = "harvests")
 public class Harvest {
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     @NonNull
     @ColumnInfo(name = "harvest_id")
-    public String harvestId;
+    public long harvestId;
 
     @NonNull
     @ColumnInfo(name = "user_hash")
@@ -25,8 +25,7 @@ public class Harvest {
     @ColumnInfo(name = "amount")
     public long amount;
 
-    public Harvest(@NonNull String harvestId, @NonNull String userHash, @NonNull long time, @NonNull long amount) {
-        this.harvestId = harvestId;
+    public Harvest(@NonNull String userHash, @NonNull long time, @NonNull long amount) {
         this.userHash = userHash;
         this.time = time;
         this.amount = amount;

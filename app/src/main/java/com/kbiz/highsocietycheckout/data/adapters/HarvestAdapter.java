@@ -1,5 +1,6 @@
 package com.kbiz.highsocietycheckout.data.adapters;
 
+import android.icu.text.SimpleDateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +12,7 @@ import com.kbiz.highsocietycheckout.R;
 import com.kbiz.highsocietycheckout.data.entities.Harvest;
 
 import java.util.List;
+import java.util.Locale;
 
 public class HarvestAdapter extends RecyclerView.Adapter<HarvestAdapter.HarvestViewHolder> {
     private List<Harvest> harvests;
@@ -29,9 +31,18 @@ public class HarvestAdapter extends RecyclerView.Adapter<HarvestAdapter.HarvestV
     @Override
     public void onBindViewHolder(@NonNull HarvestViewHolder holder, int position) {
         Harvest harvest = harvests.get(position);
-        holder.textViewDate.setText(String.valueOf(harvest.time)); // You may want to format the time appropriately
+        holder.textViewDate.setText(new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(harvest.time));
+        holder.textViewHarvesterHash.setText(harvest.userHash.substring(harvest.userHash.length()-7));
         holder.textViewAmount.setText(String.valueOf(harvest.amount));
+
+        // Set alternating background colors
+        if (position % 2 == 0) {
+            holder.itemView.setBackgroundColor(holder.itemView.getResources().getColor(R.color.dark_green,null));
+        } else {
+            holder.itemView.setBackgroundColor(holder.itemView.getResources().getColor(R.color.light_green,null));
+        }
     }
+
 
     @Override
     public int getItemCount() {
@@ -46,11 +57,13 @@ public class HarvestAdapter extends RecyclerView.Adapter<HarvestAdapter.HarvestV
     static class HarvestViewHolder extends RecyclerView.ViewHolder {
         private final TextView textViewDate;
         private final TextView textViewAmount;
+        private final TextView textViewHarvesterHash;
 
         public HarvestViewHolder(@NonNull View itemView) {
             super(itemView);
             textViewDate = itemView.findViewById(R.id.textViewDate);
             textViewAmount = itemView.findViewById(R.id.textViewAmount);
+            textViewHarvesterHash = itemView.findViewById(R.id.textViewHarvesterHash);
         }
     }
 }

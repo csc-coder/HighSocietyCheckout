@@ -110,7 +110,7 @@ public class DatabaseManager {
                         // Use the data as needed
                         Log.d(TAG, "harvest record: " + harvestIDIndex+", "+userHash+", "+time+", "+amount);
                         //store hash
-                        harvests.add(new Harvest(harvestId, userHash,  time, amount));
+                        harvests.add(new Harvest(userHash,  time, amount));
                     } while (cursor.moveToNext());
                 }
             } finally {
