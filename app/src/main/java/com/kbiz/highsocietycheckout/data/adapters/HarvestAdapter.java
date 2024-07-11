@@ -54,6 +54,10 @@ public class HarvestAdapter extends RecyclerView.Adapter<HarvestAdapter.HarvestV
         notifyDataSetChanged();
     }
 
+    public List<Harvest> getHarvests() {
+        return harvests;
+    }
+
     static class HarvestViewHolder extends RecyclerView.ViewHolder {
         private final TextView textViewDate;
         private final TextView textViewAmount;

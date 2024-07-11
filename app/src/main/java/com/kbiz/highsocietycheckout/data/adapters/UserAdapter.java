@@ -43,6 +43,10 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         notifyDataSetChanged();
     }
 
+    public List<User> getUsers() {
+        return users;
+    }
+
     static class UserViewHolder extends RecyclerView.ViewHolder {
         private final TextView textViewName;
 
