@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
+import androidx.room.Query;
 
 @Entity(tableName = "harvests")
 public class Harvest {
@@ -30,4 +31,5 @@ public class Harvest {
         this.time = time;
         this.amount = amount;
     }
+
 }

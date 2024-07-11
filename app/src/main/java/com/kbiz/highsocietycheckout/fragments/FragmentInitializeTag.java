@@ -25,6 +25,9 @@ import android.view.ViewGroup;
 import com.kbiz.highsocietycheckout.MainActivity;
 import com.kbiz.highsocietycheckout.R;
 import com.kbiz.highsocietycheckout.data.StatusViewModel;
+import com.kbiz.highsocietycheckout.data.dao.UserDAO;
+import com.kbiz.highsocietycheckout.data.entities.User;
+import com.kbiz.highsocietycheckout.database.AppDatabase;
 import com.kbiz.highsocietycheckout.database.DatabaseManager;
 import com.kbiz.highsocietycheckout.databinding.FragmentInitializeTagBinding;
 import com.kbiz.highsocietycheckout.nfc.NFCHandler;
@@ -47,6 +50,7 @@ public class FragmentInitializeTag extends Fragment implements NFCReactor {
     private NFCHandler.NfcIntentHandler nfcIntentHandler;
     private String userHash;
     private DatabaseManager dbManager;
+    private UserDAO userDAO;
 
 
     public FragmentInitializeTag() {
@@ -56,7 +60,12 @@ public class FragmentInitializeTag extends Fragment implements NFCReactor {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //DB
+        dbManager = DatabaseManager.getInstance();
+        AppDatabase db = AppDatabase.getDatabase(getContext().getApplicationContext());
+        userDAO = db.userDAO();
 
+        //NFC
         nfcHandler = NFCHandler.getInstance();
         statusViewModel = new ViewModelProvider(requireActivity()).get(StatusViewModel.class);
         nfcIntentHandler = new NFCHandler.NfcIntentHandler() {
@@ -101,7 +110,6 @@ public class FragmentInitializeTag extends Fragment implements NFCReactor {
         // Inflate the layout for this fragment using view binding
         binding = FragmentInitializeTagBinding.inflate(inflater, container, false);
         statusViewModel = new ViewModelProvider(requireActivity()).get(StatusViewModel.class);
-        dbManager = DatabaseManager.getInstance();
 
         // Register the MenuProvider
         requireActivity().addMenuProvider(new MenuProvider() {
@@ -162,7 +170,7 @@ public class FragmentInitializeTag extends Fragment implements NFCReactor {
             Log.d(LOK, "user hash sucessfully written to tag: " + userHash);
 
             if (!dbManager.userHashExists(userHash)) {
-                this.dbManager.addUser(userHash);
+                this.userDAO.insert(new User(userHash));
                 statusViewModel.setStatusText("user hash saved to database.");
             } else {
                 statusViewModel.setStatusText("user hash already in database.");

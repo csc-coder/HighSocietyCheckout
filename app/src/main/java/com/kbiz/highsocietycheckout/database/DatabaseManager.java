@@ -53,22 +53,6 @@ public class DatabaseManager {
         return dbHelper.getWritableDatabase();
     }
 
-    public long addUser(String userHash) {
-        ContentValues values = new ContentValues();
-        values.put(DatabaseHelper.COLUMN_USER_HASH, userHash);
-        Log.d(TAG,"adding new user hash to db:"+userHash);
-        return database.insert(DatabaseHelper.TABLE_USERS, null, values);
-    }
-
-    public long addHarvest(String harvestHash, String userHash, long time, double amount) {
-        ContentValues values = new ContentValues();
-        values.put(COLUMN_HARVEST_ID, harvestHash);
-        values.put(COLUMN_USER_HASH, userHash);
-        values.put(COLUMN_TIME, time);
-        values.put(COLUMN_AMOUNT, amount);
-        return database.insert(DatabaseHelper.TABLE_HARVESTS, null, values);
-    }
-
     public Cursor getUsersCursor() {
         return database.query(DatabaseHelper.TABLE_USERS, null, null, null, null, null, null);
     }

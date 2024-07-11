@@ -125,21 +125,26 @@ public class FragmentScan extends Fragment implements NFCReactor {
 
             //check if db contains the hash
 
-            String trimmedRecord = records.get(0).substring(1);
-            if (ndefMessage == null || records.isEmpty() || !nfcHandler.isValidRecord(trimmedRecord)) {
+            String userHashOnTag = records.get(0).substring(1);
+            if (ndefMessage == null || records.isEmpty() || !nfcHandler.isValidRecord(userHashOnTag)) {
                 Log.d(LOK, "invalid tag found, switching to registration to fix this.");
                 ((MainActivity) getContext()).runOnMainThread(
                         () -> NavHostFragment.findNavController(this).navigate(R.id.action_fragmentScan_to_fragmentRegister));
             } else {
                 //check if tag has hash and if its in the db
-                if (!DatabaseManager.getInstance().userHashExists(trimmedRecord)) {
-                    statusViewModel.setStatusText("hash cant be found in user table. please clear tag and register again." + trimmedRecord);
+                if (!DatabaseManager.getInstance().userHashExists(userHashOnTag)) {
+                    statusViewModel.setStatusText("hash cant be found in user table. please clear tag and register again." + userHashOnTag);
                     return;
                 }
 
                 Log.d(LOK, "initialized tag found, switching to harvest");
+
+
+                Bundle bundle = new Bundle();
+                bundle.putString("USER_HASH", userHashOnTag);
                 ((MainActivity) getContext()).runOnMainThread(
-                        () -> NavHostFragment.findNavController(this).navigate(R.id.action_fragmentScan_to_fragmentHarvest));
+                        () -> NavHostFragment.findNavController(this).navigate(R.id.action_fragmentScan_to_fragmentHarvest, bundle)
+                );
             }
 
         } catch (IOException | FormatException e) {

@@ -5,6 +5,7 @@ import android.util.Log;
 
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
 import com.google.gson.Gson;
 import com.kbiz.highsocietycheckout.data.dao.HarvestDAO;
@@ -22,6 +23,7 @@ public class DataViewModel extends AndroidViewModel {
     private final UserDAO userDao;
     private final HarvestDAO harvestDao;
 
+    private LiveData<Long> totalHarvest;
     private final LiveData<List<User>> allUsers;
     private final LiveData<List<Harvest>> allHarvests;
 
@@ -47,6 +49,7 @@ public class DataViewModel extends AndroidViewModel {
             userDao.clearAllUsers();
         });
     }
+
 
     public LiveData<List<User>> getAllUsers() {
         return allUsers;

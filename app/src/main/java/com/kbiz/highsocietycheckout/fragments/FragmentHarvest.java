@@ -13,12 +13,14 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.view.MenuProvider;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 
@@ -26,7 +28,10 @@ import com.kbiz.highsocietycheckout.MainActivity;
 import com.kbiz.highsocietycheckout.R;
 import com.kbiz.highsocietycheckout.data.HarvestViewModel;
 import com.kbiz.highsocietycheckout.data.StatusViewModel;
-import com.kbiz.highsocietycheckout.data.dao.HarvestDAO_Impl;
+import com.kbiz.highsocietycheckout.data.dao.HarvestDAO;
+import com.kbiz.highsocietycheckout.data.dao.UserDAO;
+import com.kbiz.highsocietycheckout.data.entities.User;
+import com.kbiz.highsocietycheckout.database.AppDatabase;
 import com.kbiz.highsocietycheckout.database.DatabaseManager;
 import com.kbiz.highsocietycheckout.databinding.FragmentHarvestBinding;
 import com.kbiz.highsocietycheckout.nfc.NFCHandler;
@@ -41,8 +46,7 @@ import java.util.ArrayList;
 public class FragmentHarvest extends Fragment implements NFCReactor {
     public static final String LOK = "LOK_HARVEST";
 
-    private HarvestViewModel amount;
-    private static final int maxAmount = 50;
+    private static final Integer MAX_MONTHLY_HARVEST_AMOUNT = 50;
 
     private NFCHandler nfcHandler;
     private FragmentHarvestBinding binding;
@@ -51,6 +55,9 @@ public class FragmentHarvest extends Fragment implements NFCReactor {
     private NFCHandler.NfcIntentHandler nfcIntentHandler;
     private HarvestViewModel harvestViewModel;
     private DatabaseManager database;
+    private UserDAO userDAO;
+    private HarvestDAO harvestDAO;
+    private String userHash;
 
     public FragmentHarvest() {
         // Required empty public constructor
@@ -61,22 +68,42 @@ public class FragmentHarvest extends Fragment implements NFCReactor {
         super.onCreate(savedInstanceState);
 
         nfcHandler = NFCHandler.getInstance();
-        amount = new ViewModelProvider(requireActivity()).get(HarvestViewModel.class);
-        statusViewModel = new ViewModelProvider(requireActivity()).get(StatusViewModel.class);
-        database= DatabaseManager.getInstance();
-
         //dont read now. activate again when harvest btn was clicked
         nfcHandler.disableReaderMode();
 
-        nfcIntentHandler=new NFCHandler.NfcIntentHandler() {
+        harvestViewModel = new ViewModelProvider(requireActivity()).get(HarvestViewModel.class);
+        statusViewModel = new ViewModelProvider(requireActivity()).get(StatusViewModel.class);
+
+        database = DatabaseManager.getInstance();
+        AppDatabase db = AppDatabase.getDatabase(getContext().getApplicationContext());
+        userDAO = db.userDAO();
+        harvestDAO = db.harvestDAO();
+
+
+        //fetch args, check hash validity and existence in db and aggregate this months avail amount 
+        if (getArguments() != null) {
+            userHash = getArguments().getString("USER_HASH");
+            Log.d(LOK, "got userHash via frag param: " + userHash);
+
+            Log.d(LOK, "checking db for hash and calculating this months available amount: " + userHash);
+            if (!database.userHashExists(userHash)) {
+                statusViewModel.setStatusText("user hash not found in database. Please try again or clear tag and reinit.");
+                Toast.makeText(getContext(), "Unknown user. Please retry or clear tag and reinit", Toast.LENGTH_SHORT).show();
+                ((MainActivity) getContext()).runOnMainThread(() -> NavHostFragment.findNavController(this).navigate(R.id.action_fragmentHarvest_to_fragmentScan));
+            }
+
+            statusViewModel.setStatusText("user hash found :D we can go harvesting.");
+        }
+
+        nfcIntentHandler = new NFCHandler.NfcIntentHandler() {
             @Override
             public void onNDEFDiscovered(Tag tag) {
-                handleNdefDiscovered(tag);
+                confirmHarvestWithTag(tag);
             }
 
             @Override
             public void onNDEFlessDiscovered(Tag tag) {
-//                statusViewModel.setStatusText("Harvst:Empty Tag discovered");
+                statusViewModel.setStatusText("Harvest:Empty Tag discovered. Please try again.");
             }
 
             @Override
@@ -93,7 +120,7 @@ public class FragmentHarvest extends Fragment implements NFCReactor {
         };
     }
 
-    private void handleNdefDiscovered(Tag tag) {
+    private void confirmHarvestWithTag(Tag tag) {
         try {
             Ndef ndef = Ndef.get(tag);
             if (ndef == null) {
@@ -106,7 +133,7 @@ public class FragmentHarvest extends Fragment implements NFCReactor {
             ArrayList<String> recs = nfcHandler.extractTextRecordsFromNdefMessage(ndefMessage);
 
             if (ndefMessage == null || recs.isEmpty()) {
-                statusViewModel.setStatusText("Error processing tag. Please re-init." );
+                statusViewModel.setStatusText("Error processing tag. Please re-init.");
 
                 ((MainActivity) getContext()).runOnMainThread(() -> {
                     NavHostFragment.findNavController(FragmentHarvest.this).navigate(R.id.action_fragmentHarvest_to_fragmentScan);
@@ -117,9 +144,9 @@ public class FragmentHarvest extends Fragment implements NFCReactor {
             statusViewModel.setStatusText("Error processing tag: " + e.getMessage());
         }
     }
+
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment using view binding
         binding = FragmentHarvestBinding.inflate(inflater, container, false);
         harvestViewModel = new ViewModelProvider(this).get(HarvestViewModel.class);
@@ -127,6 +154,16 @@ public class FragmentHarvest extends Fragment implements NFCReactor {
         binding.setHarvestModel(harvestViewModel);
         binding.setLifecycleOwner(this);
 
+        harvestViewModel.getTotalHarvestForCurrentMonth(userHash).observe(getViewLifecycleOwner(), new Observer<Long>() {
+            @Override
+            public void onChanged(Long totalHarvest) {
+                Log.d(LOK, "found total harvested weed this month: " + totalHarvest);
+
+                long remaining = MAX_MONTHLY_HARVEST_AMOUNT - totalHarvest;
+                remaining = Math.max(0, Math.min(remaining, 50));//keep remaining amount between 0 and MAX
+                harvestViewModel.setAvailAmount(Math.toIntExact(remaining));
+            }
+        });
         return binding.getRoot();
     }
 
@@ -142,6 +179,16 @@ public class FragmentHarvest extends Fragment implements NFCReactor {
         binding.buttonHarvest.setOnClickListener(v -> handleHarvestBtn());
         binding.buttonReset.setOnClickListener(v -> handleResetBtn());
 
+        //aggregate avail amount by this months harvest records
+        ((MainActivity) getContext()).runOnMainThread(() -> {
+            harvestDAO.getTotalHarvestForCurrentMonth(userHash).observe(getViewLifecycleOwner(), new Observer<Long>() {
+                @Override
+                public void onChanged(Long totalHarvest) {
+                    long availAmount = totalHarvest;
+                    harvestViewModel.setAvailAmount(Math.toIntExact(availAmount));
+                }
+            });
+        });
 
         // Register the MenuProvider
         requireActivity().addMenuProvider(new MenuProvider() {
@@ -155,16 +202,13 @@ public class FragmentHarvest extends Fragment implements NFCReactor {
                 int itemId = menuItem.getItemId();
                 MainActivity activity = (MainActivity) getContext();
                 if (itemId == R.id.action_clear_tag) {// Handle settings action
-                    activity.runOnMainThread(
-                            () -> NavHostFragment.findNavController(FragmentHarvest.this).navigate(R.id.action_fragmentHarvest_to_fragmentClearTag));
+                    activity.runOnMainThread(() -> NavHostFragment.findNavController(FragmentHarvest.this).navigate(R.id.action_fragmentHarvest_to_fragmentClearTag));
                     return true;
                 } else if (itemId == R.id.action_db_manager) {// Handle about action
-                    activity.runOnMainThread(
-                            () -> NavHostFragment.findNavController(FragmentHarvest.this).navigate(R.id.action_fragmentHarvest_to_fragmentDBManager));
+                    activity.runOnMainThread(() -> NavHostFragment.findNavController(FragmentHarvest.this).navigate(R.id.action_fragmentHarvest_to_fragmentDBManager));
                     return true;
                 } else if (itemId == R.id.action_show_logs) {// Handle about action
-                    activity.runOnMainThread(
-                            () -> NavHostFragment.findNavController(FragmentHarvest.this).navigate(R.id.action_fragmentHarvest_to_fragmentShowLogs));
+                    activity.runOnMainThread(() -> NavHostFragment.findNavController(FragmentHarvest.this).navigate(R.id.action_fragmentHarvest_to_fragmentShowLogs));
                     return true;
                 }
                 return false;
@@ -173,8 +217,8 @@ public class FragmentHarvest extends Fragment implements NFCReactor {
     }
 
     private void handleResetBtn() {
-        this.amount.setHarvestAmount(0);
-        this.amount.setAvailAmount(0);
+        this.harvestViewModel.setHarvestAmount(0);
+        this.harvestViewModel.setAvailAmount(0);
     }
 
     private void handleHarvestBtn() {
@@ -183,19 +227,16 @@ public class FragmentHarvest extends Fragment implements NFCReactor {
     }
 
     private void handleAmountBtn(int amountToAdd) {
-        int newAmount=this.amount.getHarvestAmount().getValue()+amountToAdd;
-        this.amount.setHarvestAmount( fixNewAmount(newAmount));
+        long newAvailAmount = harvestViewModel.getAvailAmount().getValue() - amountToAdd;
+        newAvailAmount = Math.max(0, Math.min(newAvailAmount, 50));
+        this.harvestViewModel.setAvailAmount(Math.toIntExact(newAvailAmount));
+
+        int newAmount = this.harvestViewModel.getHarvestAmount().getValue() + amountToAdd;
+        newAmount = Math.toIntExact(Math.max(0, Math.min(newAvailAmount, 50)));
+        this.harvestViewModel.setHarvestAmount(newAmount);
     }
 
-    private int fixNewAmount(int newAmount){
-        if(newAmount > maxAmount){
-            return maxAmount;
-        }
-        if(newAmount<0){
-            return 0;
-        }
-        return newAmount;
-    }
+
     public void handleNFCIntent(Intent intent) {
         nfcHandler.handleIntent(intent, nfcIntentHandler);
     }
