@@ -40,6 +40,18 @@
         <action
             android:id="@+id/action_fragmentRegister_to_fragmentInitializeTag"
             app:destination="@id/fragmentInitializeTag" />
+        <action
+            android:id="@+id/action_fragmentRegister_to_fragmentShowLogs"
+            app:destination="@id/fragmentShowLogs" />
+        <action
+            android:id="@+id/action_fragmentRegister_to_fragmentDBManager"
+            app:destination="@id/fragmentDBManager" />
+        <action
+            android:id="@+id/action_fragmentRegister_to_fragmentUnregister"
+            app:destination="@id/fragmentUnregister" />
+        <action
+            android:id="@+id/action_fragmentRegister_to_fragmentClearTag"
+            app:destination="@id/fragmentClearTag" />
     </fragment>
 
     <!-- Initialize Tag Fragment -->
@@ -60,6 +72,18 @@
         <action
             android:id="@+id/action_fragmentInitializeTag_to_fragmentConfirm"
             app:destination="@id/fragmentConfirm" />
+        <action
+            android:id="@+id/action_fragmentInitializeTag_to_fragmentShowLogs"
+            app:destination="@id/fragmentShowLogs" />
+        <action
+            android:id="@+id/action_fragmentInitializeTag_to_fragmentDBManager"
+            app:destination="@id/fragmentDBManager" />
+        <action
+            android:id="@+id/action_fragmentInitializeTag_to_fragmentUnregister"
+            app:destination="@id/fragmentUnregister" />
+        <action
+            android:id="@+id/action_fragmentInitializeTag_to_fragmentClearTag"
+            app:destination="@id/fragmentClearTag" />
     </fragment>
 
     <!-- Harvest Fragment -->
@@ -74,6 +98,18 @@
         <action
             android:id="@+id/action_fragmentHarvest_to_fragmentConfirm"
             app:destination="@id/fragmentConfirm" />
+        <action
+            android:id="@+id/action_fragmentHarvest_to_fragmentShowLogs"
+            app:destination="@id/fragmentShowLogs" />
+        <action
+            android:id="@+id/action_fragmentHarvest_to_fragmentDBManager"
+            app:destination="@id/fragmentDBManager" />
+        <action
+            android:id="@+id/action_fragmentHarvest_to_fragmentUnregister"
+            app:destination="@id/fragmentUnregister" />
+        <action
+            android:id="@+id/action_fragmentHarvest_to_fragmentClearTag"
+            app:destination="@id/fragmentClearTag" />
     </fragment>
 
     <!-- Unregister Fragment -->

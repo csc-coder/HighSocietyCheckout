@@ -1,6 +1,8 @@
 package com.kbiz.highsocietycheckout.fragments;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -11,24 +13,16 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.kbiz.highsocietycheckout.R;
 import com.kbiz.highsocietycheckout.data.DataViewModel;
 import com.kbiz.highsocietycheckout.data.adapters.HarvestAdapter;
 import com.kbiz.highsocietycheckout.data.adapters.UserAdapter;
-import com.kbiz.highsocietycheckout.data.entities.Harvest;
-import com.kbiz.highsocietycheckout.data.entities.User;
-
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -39,7 +33,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -68,6 +61,7 @@ public class FragmentDBManager extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_db_manager, container, false);
         FloatingActionButton fabBackup = view.findViewById(R.id.fab_backup);
+        Button btnClearUserTable = view.findViewById(R.id.btnClearUserTable);
 
         usersRecyclerView = view.findViewById(R.id.users_list);
         harvestsRecyclerView = view.findViewById(R.id.harvests_list);
@@ -93,7 +87,14 @@ public class FragmentDBManager extends Fragment {
                 backupDatabase();
             }
         });
+        btnClearUserTable.setOnClickListener(view1 -> {
+            showConfirmDialog((dialog, which) -> mainViewModel.clearAllUsers());
+        });
         return view;
+    }
+
+    private void showConfirmDialog(DialogInterface.OnClickListener taskOnYesClick) {
+        new AlertDialog.Builder(requireContext()).setTitle("Confirmation").setMessage("Really? Are you sure?").setPositiveButton("Yes", taskOnYesClick).setNegativeButton("No", null).show();
     }
 
     private void backupDatabase() {
@@ -110,8 +111,7 @@ public class FragmentDBManager extends Fragment {
 
         File backupFile = new File(backupDir, "harvest_backup.db");
 
-        try (FileChannel src = new FileInputStream(dbFile).getChannel();
-             FileChannel dst = new FileOutputStream(backupFile).getChannel()) {
+        try (FileChannel src = new FileInputStream(dbFile).getChannel(); FileChannel dst = new FileOutputStream(backupFile).getChannel()) {
             dst.transferFrom(src, 0, src.size());
             sendBackupEmail(backupFile);
         } catch (IOException e) {

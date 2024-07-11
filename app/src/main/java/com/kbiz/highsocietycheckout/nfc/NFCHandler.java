@@ -450,7 +450,7 @@ public class NFCHandler implements NfcAdapter.ReaderCallback, NfcAdapter.OnTagRe
             return false;
         }
 
-        if (!firstRecord.substring(1).startsWith(HASH_PREFIX)) {
+        if (!firstRecord.startsWith(HASH_PREFIX)) {
             statusViewModel.setStatusText("record from tag does not start with prefix: '"+HASH_PREFIX+"':" + firstRecord);
             return false;
         }

@@ -9,12 +9,16 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.core.view.MenuProvider;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 
@@ -137,6 +141,35 @@ public class FragmentHarvest extends Fragment implements NFCReactor {
         binding.button25g.setOnClickListener(v -> handleAmountBtn(25));
         binding.buttonHarvest.setOnClickListener(v -> handleHarvestBtn());
         binding.buttonReset.setOnClickListener(v -> handleResetBtn());
+
+
+        // Register the MenuProvider
+        requireActivity().addMenuProvider(new MenuProvider() {
+            @Override
+            public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
+                menuInflater.inflate(R.menu.menu_main, menu);
+            }
+
+            @Override
+            public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
+                int itemId = menuItem.getItemId();
+                MainActivity activity = (MainActivity) getContext();
+                if (itemId == R.id.action_clear_tag) {// Handle settings action
+                    activity.runOnMainThread(
+                            () -> NavHostFragment.findNavController(FragmentHarvest.this).navigate(R.id.action_fragmentHarvest_to_fragmentClearTag));
+                    return true;
+                } else if (itemId == R.id.action_db_manager) {// Handle about action
+                    activity.runOnMainThread(
+                            () -> NavHostFragment.findNavController(FragmentHarvest.this).navigate(R.id.action_fragmentHarvest_to_fragmentDBManager));
+                    return true;
+                } else if (itemId == R.id.action_show_logs) {// Handle about action
+                    activity.runOnMainThread(
+                            () -> NavHostFragment.findNavController(FragmentHarvest.this).navigate(R.id.action_fragmentHarvest_to_fragmentShowLogs));
+                    return true;
+                }
+                return false;
+            }
+        }, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
     }
 
     private void handleResetBtn() {

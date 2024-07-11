@@ -16,10 +16,16 @@ import com.kbiz.highsocietycheckout.data.dao.UserDAO;
 import com.kbiz.highsocietycheckout.data.entities.Harvest;
 import com.kbiz.highsocietycheckout.data.entities.User;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 @Database(entities = {User.class, Harvest.class}, version = 1, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
     public abstract UserDAO userDAO();
     public abstract HarvestDAO harvestDAO();
+
+    private static final int NUMBER_OF_THREADS = 4;
+    public static final ExecutorService databaseWriteExecutor = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
 
     public static final String TAG="LOK_APP_DB";
     static final Migration RESET_MIGRATION = new Migration(1, 2) {
@@ -57,4 +63,5 @@ public abstract class AppDatabase extends RoomDatabase {
         }
         return INSTANCE;
     }
+
 }

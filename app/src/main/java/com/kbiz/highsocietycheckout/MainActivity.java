@@ -88,6 +88,10 @@ public class MainActivity extends AppCompatActivity {
         navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
 
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+        }
+
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         dbManager=DatabaseManager.getInstance(this);
         dbManager.open();

@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Harvest Date"
-        android:textSize="18sp"
+        android:textSize="12sp"
         android:textColor="#000000" />
 
     <TextView
@@ -18,6 +18,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Harvest Amount"
-        android:textSize="18sp"
+        android:textSize="12sp"
         android:textColor="#000000" />
 </LinearLayout>

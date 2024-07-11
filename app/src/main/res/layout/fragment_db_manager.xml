@@ -50,4 +50,13 @@
         app:layout_constraintVertical_bias="1.0"
         app:backgroundTint="@color/black"
         app:tint="@android:color/white" />
+
+    <Button
+        android:id="@+id/btnClearUserTable"
+        android:layout_width="135dp"
+        android:layout_height="52dp"
+        android:background="#bb0000"
+        android:text="Clear Users"
+        app:layout_constraintBottom_toBottomOf="@+id/users_list"
+        app:layout_constraintEnd_toEndOf="@+id/users_list" />
 </androidx.constraintlayout.widget.ConstraintLayout>

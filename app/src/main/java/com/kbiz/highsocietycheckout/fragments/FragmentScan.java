@@ -125,14 +125,15 @@ public class FragmentScan extends Fragment implements NFCReactor {
 
             //check if db contains the hash
 
-            if (ndefMessage == null || records.isEmpty() || !nfcHandler.isValidRecord(records.get(0))) {
+            String trimmedRecord = records.get(0).substring(1);
+            if (ndefMessage == null || records.isEmpty() || !nfcHandler.isValidRecord(trimmedRecord)) {
                 Log.d(LOK, "invalid tag found, switching to registration to fix this.");
                 ((MainActivity) getContext()).runOnMainThread(
                         () -> NavHostFragment.findNavController(this).navigate(R.id.action_fragmentScan_to_fragmentRegister));
             } else {
                 //check if tag has hash and if its in the db
-                if (!DatabaseManager.getInstance().userHashExists(records.get(0))) {
-                    statusViewModel.setStatusText("hash cant be found in user table. please clear tag and register again." + records.get(0));
+                if (!DatabaseManager.getInstance().userHashExists(trimmedRecord)) {
+                    statusViewModel.setStatusText("hash cant be found in user table. please clear tag and register again." + trimmedRecord);
                     return;
                 }
 
