@@ -1,6 +1,7 @@
 package com.kbiz.highsocietycheckout.fragments;
 
 import android.app.AlertDialog;
+import android.content.ClipData;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -118,11 +119,12 @@ public class FragmentDBManager extends Fragment {
             }
 
             // Fetch data
-            LiveData<List<User>> users = userDao.getAllUsers();
-            LiveData<List<Harvest>> harvests = harvestDao.getAllHarvests();
+
+            List<User> users = userAdapter.getUsers();
+            List<Harvest> harvests = harvestAdapter.getHarvests();
 
             // Convert to JSON
-            String jsonString = convertDataToJson(users.getValue(), harvests.getValue());
+            String jsonString = convertDataToJson(users, harvests);
 
             // Write JSON to file
             try {
@@ -172,11 +174,20 @@ public class FragmentDBManager extends Fragment {
         if (context == null) {
             return;
         }
-
         Uri contentUri = FileProvider.getUriForFile(context, context.getPackageName() + ".provider", backupFile);
-
+        String mimeType = "application/json";
+        String[] mimeTypeArray = new String[] { mimeType };
         Intent emailIntent = new Intent(Intent.ACTION_SEND);
-        emailIntent.setType("application/json");
+
+        emailIntent.setType(mimeType);
+
+        // Add the uri as a ClipData
+        emailIntent.setClipData(new ClipData(
+                "A label describing your file to the user",
+                mimeTypeArray,
+                new ClipData.Item(contentUri)
+        ));
+
         emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{"csc.codemaker@gmail.com"});
         emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Database Backup");
         emailIntent.putExtra(Intent.EXTRA_TEXT, "Attached is the backup of the database.");
@@ -189,7 +200,7 @@ public class FragmentDBManager extends Fragment {
         List<ResolveInfo> resolveInfoList = context.getPackageManager().queryIntentActivities(emailIntent, PackageManager.MATCH_DEFAULT_ONLY);
         for (ResolveInfo resolveInfo : resolveInfoList) {
             String packageName = resolveInfo.activityInfo.packageName;
-            context.grantUriPermission(packageName, contentUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            context.grantUriPermission(packageName, contentUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
         }
 
         startActivity(Intent.createChooser(emailIntent, "Send email..."));
