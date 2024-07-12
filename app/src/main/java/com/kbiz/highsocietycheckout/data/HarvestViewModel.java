@@ -44,11 +44,4 @@ public class HarvestViewModel extends AndroidViewModel {
         harvestAmount.postValue(0);
         availAmount.postValue(0);
     }
-
-    public LiveData<Long> getTotalHarvestForCurrentMonth(String userHash) {
-        if (totalHarvest == null) {
-            totalHarvest = harvestDao.getTotalHarvestForCurrentMonth(userHash);
-        }
-        return totalHarvest;
-    }
 }

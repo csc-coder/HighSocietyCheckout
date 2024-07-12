@@ -155,8 +155,7 @@ public class FragmentHarvest extends Fragment implements NFCReactor {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_harvest, container, false);
         binding.setHarvestModel(harvestViewModel);
         binding.setLifecycleOwner(this);
-
-        harvestViewModel.getTotalHarvestForCurrentMonth(userHash).observe(getViewLifecycleOwner(), new Observer<Long>() {
+        harvestDAO.getTotalHarvestForCurrentMonth(userHash).observe(getViewLifecycleOwner(), new Observer<Long>() {
             @Override
             public void onChanged(Long totalHarvest) {
                 Log.d(LOK, "found total harvested weed this month: " + totalHarvest);
@@ -186,8 +185,9 @@ public class FragmentHarvest extends Fragment implements NFCReactor {
             harvestDAO.getTotalHarvestForCurrentMonth(userHash).observe(getViewLifecycleOwner(), new Observer<Long>() {
                 @Override
                 public void onChanged(Long totalHarvest) {
-                    long availAmount = totalHarvest;
+                    long availAmount = 50 - totalHarvest;
                     harvestViewModel.setAvailAmount(Math.toIntExact(availAmount));
+                    Log.d(LOK, "aggregated avail  amount this month: " + availAmount);
                 }
             });
         });
@@ -219,20 +219,32 @@ public class FragmentHarvest extends Fragment implements NFCReactor {
     }
 
     private void handleResetBtn() {
-        this.harvestViewModel.setHarvestAmount(0);
-        this.harvestViewModel.setAvailAmount(0);
+        ((MainActivity) getContext()).runOnMainThread(() -> {
+            harvestDAO.getTotalHarvestForCurrentMonth(userHash).observe(getViewLifecycleOwner(), new Observer<Long>() {
+                @Override
+                public void onChanged(Long totalHarvest) {
+                    long availAmount = 50 - totalHarvest;
+                    Log.d(LOK, "aggregated avail  amount this month: " + availAmount);
+                    harvestViewModel.setAvailAmount(Math.toIntExact(availAmount));
+                    harvestViewModel.setHarvestAmount(0);
+                }
+            });
+        });
+
     }
 
     private void handleHarvestBtn() {
+
 //        nfcHandler.enableReaderMode();
-        long amountToHarvest=harvestViewModel.getHarvestAmount().getValue();
-        long time=System.nanoTime();
-        Harvest harvest = new Harvest( userHash,  time, amountToHarvest);
+        long amountToHarvest = harvestViewModel.getHarvestAmount().getValue();
+        long time = System.nanoTime();
+
+        Harvest harvest = new Harvest(userHash, time, amountToHarvest);
         AppDatabase.databaseWriteExecutor.execute(() -> {
             harvestDAO.insert(harvest);
         });
         Log.d(LOK, "inserted new Harvest record: " + (new Gson()).toJson(harvest));
-        Toast.makeText(getContext(), "Congrats! you got "+amountToHarvest+"g of finest weed. Enjoy :D", Toast.LENGTH_LONG).show();
+        Toast.makeText(getContext(), "Congrats! you got " + amountToHarvest + "g of finest weed. Enjoy :D", Toast.LENGTH_LONG).show();
         ((MainActivity) getContext()).runOnMainThread(() -> NavHostFragment.findNavController(FragmentHarvest.this).navigate(R.id.action_fragmentHarvest_to_fragmentScan));
 
     }
@@ -242,8 +254,8 @@ public class FragmentHarvest extends Fragment implements NFCReactor {
         newAvailAmount = Math.max(0, Math.min(newAvailAmount, 50));
         this.harvestViewModel.setAvailAmount(Math.toIntExact(newAvailAmount));
 
-        int harvestAmount=this.harvestViewModel.getHarvestAmount().getValue();
-        int newAmount = Math.toIntExact(Math.max(0, Math.min(harvestAmount, 50)));
+        int harvestAmount = this.harvestViewModel.getHarvestAmount().getValue() + amountToAdd;
+        int newAmount =  Math.max(0, Math.min(harvestAmount, 50));
         this.harvestViewModel.setHarvestAmount(newAmount);
     }
 

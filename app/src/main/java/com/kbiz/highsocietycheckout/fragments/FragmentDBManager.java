@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 
 import androidx.core.content.FileProvider;
@@ -20,6 +21,7 @@ import android.widget.Button;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
+import com.kbiz.highsocietycheckout.MailSender;
 import com.kbiz.highsocietycheckout.R;
 import com.kbiz.highsocietycheckout.data.DataViewModel;
 import com.kbiz.highsocietycheckout.data.adapters.HarvestAdapter;
@@ -47,6 +49,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.mail.MessagingException;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -183,14 +187,14 @@ public class FragmentDBManager extends Fragment {
 
         // Add the uri as a ClipData
         emailIntent.setClipData(new ClipData(
-                "A label describing your file to the user",
+                "HighSociety Database JSON export",
                 mimeTypeArray,
                 new ClipData.Item(contentUri)
         ));
 
         emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{"csc.codemaker@gmail.com"});
-        emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Database Backup");
-        emailIntent.putExtra(Intent.EXTRA_TEXT, "Attached is the backup of the database.");
+        emailIntent.putExtra(Intent.EXTRA_SUBJECT, "HighSociety Backup");
+        emailIntent.putExtra(Intent.EXTRA_TEXT, "Dear Nico, attached is the json backup of the database.");
         emailIntent.putExtra(Intent.EXTRA_STREAM, contentUri);
 
         // Grant URI permissions to the email client
@@ -206,4 +210,29 @@ public class FragmentDBManager extends Fragment {
         startActivity(Intent.createChooser(emailIntent, "Send email..."));
     }
 
+    private void sendBackupEmail2(File backupFile) {
+        new SendEmailTask().execute(backupFile);
+    }
+
+    private class SendEmailTask extends AsyncTask<File, Void, Void> {
+        @Override
+        protected Void doInBackground(File... files) {
+            File backupFile = files[0];
+            String email = "your_email@gmail.com";
+            String password = "your_password"; // Ensure you handle passwords securely
+
+            MailSender mailSender = new MailSender(email, password);
+            try {
+                mailSender.sendMail(
+                        "recipient@example.com",
+                        "Database Backup",
+                        "Attached is the backup of the database."
+                );
+            } catch (MessagingException e) {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+    }
 }
