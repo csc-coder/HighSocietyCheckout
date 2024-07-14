@@ -125,7 +125,7 @@ public class FragmentScan extends Fragment implements NFCReactor {
 
             //check if db contains the hash
 
-            String userHashOnTag = records.get(0).substring(1);
+            String userHashOnTag = records.isEmpty()? "":records.get(0).substring(1);
             if (ndefMessage == null || records.isEmpty() || !nfcHandler.isValidRecord(userHashOnTag)) {
                 Log.d(LOK, "invalid tag found, switching to registration to fix this.");
                 ((MainActivity) getContext()).runOnMainThread(

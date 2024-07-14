@@ -50,7 +50,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.mail.MessagingException;
+//import javax.mail.MessagingException;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -210,29 +210,29 @@ public class FragmentDBManager extends Fragment {
         startActivity(Intent.createChooser(emailIntent, "Send email..."));
     }
 
-    private void sendBackupEmail2(File backupFile) {
-        new SendEmailTask().execute(backupFile);
-    }
-
-    private class SendEmailTask extends AsyncTask<File, Void, Void> {
-        @Override
-        protected Void doInBackground(File... files) {
-            File backupFile = files[0];
-            String email = "your_email@gmail.com";
-            String password = "your_password"; // Ensure you handle passwords securely
-
-            MailSender mailSender = new MailSender(email, password);
-            try {
-                mailSender.sendMail(
-                        "recipient@example.com",
-                        "Database Backup",
-                        "Attached is the backup of the database."
-                );
-            } catch (MessagingException e) {
-                e.printStackTrace();
-            }
-
-            return null;
-        }
-    }
+//    private void sendBackupEmail2(File backupFile) {
+//        new SendEmailTask().execute(backupFile);
+//    }
+//
+//    private class SendEmailTask extends AsyncTask<File, Void, Void> {
+//        @Override
+//        protected Void doInBackground(File... files) {
+//            File backupFile = files[0];
+//            String email = "your_email@gmail.com";
+//            String password = "your_password"; // Ensure you handle passwords securely
+//
+//            MailSender mailSender = new MailSender(email, password);
+//            try {
+//                mailSender.sendMail(
+//                        "recipient@example.com",
+//                        "Database Backup",
+//                        "Attached is the backup of the database."
+//                );
+//            } catch (MessagingException e) {
+//                e.printStackTrace();
+//            }
+//
+//            return null;
+//        }
+//    }
 }
