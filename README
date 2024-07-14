@@ -12,6 +12,7 @@ find Whitepaper at: https://docs.google.com/document/d/1KYf3KXDWRZwQB5bXlZoLXa5N
 - **Local Database**: Stores essential member information and transaction logs on the device.
 - **NFC Integration**: Uses NFC for tag reading and writing.
 - **Data Security**: Utilizes encryption and strict access controls.
+- **Simple backup** via E-Mail
 
 ## Setup
 1. **Clone the Repository**:
@@ -25,7 +26,7 @@ find Whitepaper at: https://docs.google.com/document/d/1KYf3KXDWRZwQB5bXlZoLXa5N
    <uses-permission android:name="android.permission.NFC" />
    <uses-feature android:name="android.hardware.nfc" android:required="true" />
    ```
-4. **Run the App** on an NFC-enabled device.
+4. **Run the App** on an NFC-enabled device. with at least Android 13
 
 ## Usage
 1. **Scan Screen**: The first screen instructs users to place their RFID tag on the scanner.
@@ -44,4 +45,4 @@ find Whitepaper at: https://docs.google.com/document/d/1KYf3KXDWRZwQB5bXlZoLXa5N
 This project is open-source and available under the MIT License. See the LICENSE file for more details.
 
 ## Contact
-For questions or support, contact us at csc.greencoding@gmail.com.
+For questions or support, contact us at csc.codemaker@gmail.com.
