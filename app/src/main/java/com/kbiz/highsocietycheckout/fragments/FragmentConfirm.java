@@ -30,6 +30,7 @@ public class FragmentConfirm extends Fragment {
 
     private String message;
     private String target;
+    private String data;
     private FragmentConfirmBinding binding;
     private StatusViewModel statusViewModel;
 
@@ -45,7 +46,8 @@ public class FragmentConfirm extends Fragment {
         if (getArguments() != null) {
             message = getArguments().getString("MSG");
             target = getArguments().getString("TARGET");
-            Log.d(LOK, "got arg TARGET/MSG: " + target + "/" + message);
+            data = getArguments().getString("DATA");
+            Log.d(LOK, "got arg TARGET/MSG: " + target + "/" + message+"/"+data);
         }
 
         Log.d(LOK, "setted confirm msg: " + message);
@@ -70,7 +72,9 @@ public class FragmentConfirm extends Fragment {
                     ((MainActivity) getContext()).runOnMainThread(() -> {
                         if (this.target.equals("harvest")) {
                             Log.d(LOK, "nav to '"+target+"' with msg: " + message + "'");
-                            NavHostFragment.findNavController(FragmentConfirm.this).navigate(R.id.action_fragmentConfirm_to_fragmentHarvest);
+                            Bundle bundle = new Bundle();
+                            bundle.putString("USER_HASH", data);
+                            NavHostFragment.findNavController(FragmentConfirm.this).navigate(R.id.action_fragmentConfirm_to_fragmentHarvest, bundle);
                         } else {
                             statusViewModel.setStatusText("unknown nav target in FragConfirm:" + R.id.action_fragmentConfirm_to_fragmentHarvest);
                         }

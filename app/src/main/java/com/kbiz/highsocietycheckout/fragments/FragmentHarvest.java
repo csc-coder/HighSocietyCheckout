@@ -83,19 +83,21 @@ public class FragmentHarvest extends Fragment implements NFCReactor {
 
 
         //fetch args, check hash validity and existence in db and aggregate this months avail amount 
-        if (getArguments() != null) {
-            userHash = getArguments().getString("USER_HASH");
-            Log.d(LOK, "got userHash via frag param: " + userHash);
-
-            Log.d(LOK, "checking db for hash and calculating this months available amount: " + userHash);
-            if (!database.userHashExists(userHash)) {
-                statusViewModel.setStatusText("user hash not found in database. Please try again or clear tag and reinit.");
-                Toast.makeText(getContext(), "Unknown user. Please retry or clear tag and reinit", Toast.LENGTH_SHORT).show();
-                ((MainActivity) getContext()).runOnMainThread(() -> NavHostFragment.findNavController(this).navigate(R.id.action_fragmentHarvest_to_fragmentScan));
-            }
-
-            statusViewModel.setStatusText("user hash found :D we can go harvesting.");
+        if (getArguments() == null) {
+            Log.d(LOK + "_ERR", "expected param USER_HASH but no params given");
+            throw new RuntimeException("expected param USER_HASH but no params given");
         }
+        userHash = getArguments().getString("USER_HASH");
+        Log.d(LOK, "got userHash via frag param: " + userHash);
+
+        Log.d(LOK, "checking db for hash and calculating this months available amount: " + userHash);
+        if (!database.userHashExists(userHash)) {
+            statusViewModel.setStatusText("user hash not found in database. Please try again or clear tag and reinit.");
+            Toast.makeText(getContext(), "Unknown user. Please retry or clear tag and reinit", Toast.LENGTH_SHORT).show();
+            ((MainActivity) getContext()).runOnMainThread(() -> NavHostFragment.findNavController(this).navigate(R.id.action_fragmentHarvest_to_fragmentScan));
+        }
+
+        statusViewModel.setStatusText("user hash found :D we can go harvesting.");
 
         nfcIntentHandler = new NFCHandler.NfcIntentHandler() {
             @Override
@@ -255,7 +257,7 @@ public class FragmentHarvest extends Fragment implements NFCReactor {
         this.harvestViewModel.setAvailAmount(Math.toIntExact(newAvailAmount));
 
         int harvestAmount = this.harvestViewModel.getHarvestAmount().getValue() + amountToAdd;
-        int newAmount =  Math.max(0, Math.min(harvestAmount, 50));
+        int newAmount = Math.max(0, Math.min(harvestAmount, 50));
         this.harvestViewModel.setHarvestAmount(newAmount);
     }
 

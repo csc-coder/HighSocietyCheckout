@@ -118,6 +118,7 @@ public class FragmentClearTag extends Fragment implements NFCReactor {
         statusViewModel.setStatusText("Navigating to Registration");
         NavController ctrl = NavHostFragment.findNavController(FragmentClearTag.this);
         ((MainActivity) getContext()).runOnMainThread(
+
                 () -> ctrl.navigate(R.id.action_fragmentClearTag_to_fragmentRegister));
     }
 

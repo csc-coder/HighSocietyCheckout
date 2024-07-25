@@ -180,6 +180,7 @@ public class FragmentInitializeTag extends Fragment implements NFCReactor {
                 Bundle bundle = new Bundle();
                 bundle.putString("MSG", "Formatting successful.");
                 bundle.putString("TARGET", "harvest");
+                bundle.putString("DATA", userHash);
                 NavHostFragment.findNavController(FragmentInitializeTag.this).navigate(R.id.action_fragmentInitializeTag_to_fragmentConfirm, bundle);
             });
         } catch (IOException | FormatException e) {
