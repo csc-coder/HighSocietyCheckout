@@ -222,21 +222,16 @@ public class FragmentHarvest extends Fragment implements NFCReactor {
 
     private void handleResetBtn() {
         ((MainActivity) getContext()).runOnMainThread(() -> {
-            harvestDAO.getTotalHarvestForCurrentMonth(userHash).observe(getViewLifecycleOwner(), new Observer<Long>() {
-                @Override
-                public void onChanged(Long totalHarvest) {
-                    long availAmount = 50 - totalHarvest;
-                    Log.d(LOK, "aggregated avail  amount this month: " + availAmount);
-                    harvestViewModel.setAvailAmount(Math.toIntExact(availAmount));
-                    harvestViewModel.setHarvestAmount(0);
-                }
+            harvestDAO.getTotalHarvestForCurrentMonth(userHash).observe(getViewLifecycleOwner(), totalHarvest -> {
+                long availAmount = 50 - totalHarvest;
+                Log.d(LOK, "aggregated avail  amount this month: " + availAmount);
+                harvestViewModel.setAvailAmount(Math.toIntExact(availAmount));
+                harvestViewModel.setHarvestAmount(0);
             });
         });
-
     }
 
     private void handleHarvestBtn() {
-
 //        nfcHandler.enableReaderMode();
         long amountToHarvest = harvestViewModel.getHarvestAmount().getValue();
         long time = System.nanoTime();

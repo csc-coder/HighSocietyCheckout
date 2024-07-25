@@ -9,6 +9,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.nfc.NfcAdapter;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -29,6 +30,7 @@ import com.kbiz.highsocietycheckout.database.AppDatabase;
 import com.kbiz.highsocietycheckout.database.DatabaseHelper;
 import com.kbiz.highsocietycheckout.database.DatabaseManager;
 import com.kbiz.highsocietycheckout.databinding.ActivityMainBinding;
+import com.kbiz.highsocietycheckout.fragments.FragmentConfirm;
 import com.kbiz.highsocietycheckout.fragments.FragmentStatusBar;
 import com.kbiz.highsocietycheckout.nfc.NFCHandler;
 import com.kbiz.highsocietycheckout.nfc.NFCReactor;
@@ -85,6 +87,13 @@ public class MainActivity extends AppCompatActivity {
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        // Enable the home button
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setHomeButtonEnabled(true);
+            getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_home); // Set your home icon
+        }
+
         navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
 
@@ -105,6 +114,18 @@ public class MainActivity extends AppCompatActivity {
         checkAndCreateTables();
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                // Handle home button click here
+                navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
+                navController.navigate(R.id.action_global_fragmentScan);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
     private void checkAndCreateTables() {
         // Check and create users table
         checkAndCreateTable(DatabaseHelper.TABLE_USERS, DatabaseHelper.TABLE_CREATE_USERS, new String[]{

@@ -147,5 +147,8 @@
         android:name="com.kbiz.highsocietycheckout.fragments.FragmentShowLogs"
         android:label="fragment_show_logs"
         tools:layout="@layout/fragment_show_logs" />
+    <action
+        android:id="@+id/action_global_fragmentScan"
+        app:destination="@id/fragmentScan" />
 
 </navigation>
