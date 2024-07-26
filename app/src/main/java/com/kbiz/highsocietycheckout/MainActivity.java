@@ -9,7 +9,10 @@ import android.database.sqlite.SQLiteDatabase;
 import android.nfc.NfcAdapter;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageButton;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -84,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.NFC}, NFCHandler.REQUEST_CODE_NFC);
         }
 
-        toolbar = findViewById(R.id.toolbar);
+        toolbar = findViewById(R.id.custom_toolbar);
         setSupportActionBar(toolbar);
 
         // Enable the home button
@@ -93,6 +96,12 @@ public class MainActivity extends AppCompatActivity {
             getSupportActionBar().setHomeButtonEnabled(true);
             getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_home); // Set your home icon
         }
+
+        ImageButton homeButton = findViewById(R.id.home_button);
+        homeButton.setOnClickListener(v -> {
+            navController = Navigation.findNavController(MainActivity.this, R.id.nav_host_fragment_content_main);
+            navController.navigate(R.id.action_global_fragmentScan);
+        });
 
         navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
@@ -126,6 +135,9 @@ public class MainActivity extends AppCompatActivity {
                 return super.onOptionsItemSelected(item);
         }
     }
+
+
+
     private void checkAndCreateTables() {
         // Check and create users table
         checkAndCreateTable(DatabaseHelper.TABLE_USERS, DatabaseHelper.TABLE_CREATE_USERS, new String[]{
