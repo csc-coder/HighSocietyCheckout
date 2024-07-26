@@ -111,7 +111,7 @@ public class FragmentDBManager extends Fragment {
             showConfirmDialog((dialog, which) -> mainViewModel.clearAllUsers(),"Really? Are you sure? To ERASE the user table?");
         });
         btnClearHarvestsTable.setOnClickListener(view1 -> {
-            showConfirmDialog((dialog, which) -> mainViewModel.clearAllHarvests(),"Really? Are you sure? To ERASE the user table?");
+            showConfirmDialog((dialog, which) -> mainViewModel.clearAllHarvests(),"Really? Are you sure? To ERASE the harvest table?");
         });
         return view;
     }

@@ -234,7 +234,7 @@ public class FragmentHarvest extends Fragment implements NFCReactor {
     private void handleHarvestBtn() {
 //        nfcHandler.enableReaderMode();
         long amountToHarvest = harvestViewModel.getHarvestAmount().getValue();
-        long time = System.nanoTime();
+        long time = System.currentTimeMillis();
 
         Harvest harvest = new Harvest(userHash, time, amountToHarvest);
         AppDatabase.databaseWriteExecutor.execute(() -> {

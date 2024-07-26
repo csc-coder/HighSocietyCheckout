@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.kbiz.highsocietycheckout.R;
 import com.kbiz.highsocietycheckout.data.entities.Harvest;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -31,7 +32,9 @@ public class HarvestAdapter extends RecyclerView.Adapter<HarvestAdapter.HarvestV
     @Override
     public void onBindViewHolder(@NonNull HarvestViewHolder holder, int position) {
         Harvest harvest = harvests.get(position);
-        holder.textViewDate.setText(new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(harvest.time));
+//        holder.textViewDate.setText(new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(harvest.time));
+        String formattedDate = formatDate(harvest.time);
+        holder.textViewDate.setText(formattedDate);
         holder.textViewHarvesterHash.setText(harvest.userHash.substring(harvest.userHash.length()-7));
         holder.textViewAmount.setText(String.valueOf(harvest.amount));
 
@@ -58,6 +61,13 @@ public class HarvestAdapter extends RecyclerView.Adapter<HarvestAdapter.HarvestV
         return harvests;
     }
 
+    // Method to format timestamp to readable date
+    private String formatDate(long timestamp) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+        Date date = new Date(timestamp);
+        return sdf.format(date);
+    }
+
     static class HarvestViewHolder extends RecyclerView.ViewHolder {
         private final TextView textViewDate;
         private final TextView textViewAmount;
@@ -70,4 +80,5 @@ public class HarvestAdapter extends RecyclerView.Adapter<HarvestAdapter.HarvestV
             textViewHarvesterHash = itemView.findViewById(R.id.textViewHarvesterHash);
         }
     }
+
 }
