@@ -55,6 +55,8 @@ import java.util.Map;
 /**
  * A simple {@link Fragment} subclass.
  * create an instance of this fragment.
+ *
+ * TODO add harvest report creator and send it away after user entered receiver address
  */
 public class FragmentDBManager extends Fragment {
 

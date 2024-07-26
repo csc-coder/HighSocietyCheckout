@@ -44,6 +44,7 @@ import java.util.ArrayList;
 
 /**
  * A simple {@link Fragment} subclass.
+ * TODO fix harvest limits check and enforcement
  */
 public class FragmentHarvest extends Fragment implements NFCReactor {
     public static final String LOK = "LOK_HARVEST";
