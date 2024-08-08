@@ -200,7 +200,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Enable foreground dispatch and reader mode in onResumeFragments to ensure proper state
     }
 
     @Override

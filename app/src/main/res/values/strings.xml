@@ -25,8 +25,6 @@
     <string name="error">"Error: "</string>
     <string name="action_clear_tag">Clear tag</string>
     <string name="action_show_logs">Show Logs</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="backup">Backup all</string>
 
 </resources>

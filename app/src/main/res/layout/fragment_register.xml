@@ -25,7 +25,6 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <!-- Place of Birth Input -->
-
     <EditText
         android:id="@+id/editTextPlaceOfBirth"
         android:layout_width="0dp"
@@ -42,26 +41,26 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/editTextPersonalID" />
 
+    <!-- Date of Birth Input -->
     <EditText
-        android:id="@+id/editTextDateOfBirth"
+        android:id="@+id/editTextDate"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:background="@drawable/edittext_background"
-        android:clickable="true"
+        android:hint="Select Date"
+        android:inputType="none"
         android:focusable="false"
-        android:hint="@string/date_of_birth"
-        android:inputType="text"
         android:padding="16dp"
         android:textColor="#b3ff99"
         android:textColorHint="#d4af37"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/editTextPlaceOfBirth" />
 
+    <!-- OK Button -->
     <Button
-        android:id="@+id/buttonOk"
+        android:id="@+id/buttonRegOk"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
@@ -75,6 +74,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/editTextDateOfBirth"
+        app:layout_constraintTop_toBottomOf="@id/editTextDate"
         app:layout_constraintVertical_bias="0.015" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

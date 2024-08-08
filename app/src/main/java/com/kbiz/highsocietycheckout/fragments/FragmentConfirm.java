@@ -17,10 +17,6 @@ import com.kbiz.highsocietycheckout.MainActivity;
 import com.kbiz.highsocietycheckout.R;
 import com.kbiz.highsocietycheckout.data.StatusViewModel;
 import com.kbiz.highsocietycheckout.databinding.FragmentConfirmBinding;
-import com.kbiz.highsocietycheckout.databinding.FragmentInitializeTagBinding;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -68,7 +64,7 @@ public class FragmentConfirm extends Fragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        view.findViewById(R.id.buttonOk).setOnClickListener(v -> {
+        view.findViewById(R.id.buttonRegOk).setOnClickListener(v -> {
                     ((MainActivity) getContext()).runOnMainThread(() -> {
                         if (this.target.equals("harvest")) {
                             Log.d(LOK, "nav to '"+target+"' with msg: " + message + "'");
