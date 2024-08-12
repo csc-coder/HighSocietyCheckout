@@ -127,6 +127,9 @@
         <action
             android:id="@+id/action_fragmentConfirm_to_fragmentHarvest"
             app:destination="@id/fragmentHarvest" />
+        <action
+            android:id="@+id/action_fragmentConfirm_to_fragmentRegister"
+            app:destination="@id/fragmentRegister" />
     </fragment>
     <fragment
         android:id="@+id/fragmentClearTag"
@@ -136,6 +139,9 @@
         <action
             android:id="@+id/action_fragmentClearTag_to_fragmentRegister"
             app:destination="@id/fragmentRegister" />
+        <action
+            android:id="@+id/action_fragmentClearTag_to_fragmentConfirm"
+            app:destination="@id/fragmentConfirm" />
     </fragment>
     <fragment
         android:id="@+id/fragmentDBManager"

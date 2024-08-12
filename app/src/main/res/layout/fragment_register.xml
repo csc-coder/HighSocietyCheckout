@@ -9,21 +9,52 @@
     tools:context=".fragments.FragmentRegister">
 
     <!-- Personal ID Number Input -->
+<!--        <EditText-->
+<!--            android:id="@+id/editTextPersonalID"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginTop="32dp"-->
+<!--            android:background="@drawable/edittext_background"-->
+<!--            android:hint="@string/personal_id_hint"-->
+<!--            android:inputType="text"-->
+<!--            android:padding="16dp"-->
+<!--            android:textColor="#b3ff99"-->
+<!--            android:textColorHint="#d4af37"-->
+<!--            app:layout_constraintEnd_toEndOf="parent"-->
+<!--            app:layout_constraintStart_toStartOf="parent"-->
+<!--            app:layout_constraintTop_toTopOf="parent" />-->
+
+    <TextView
+        android:id="@+id/txtMsg"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginBottom="24dp"
+        android:gravity="center"
+        android:textAlignment="center"
+        android:textColor="#FFFFFF"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        tools:text="Werde Grower"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
     <EditText
         android:id="@+id/editTextPersonalID"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="67dp"
         android:background="@drawable/edittext_background"
         android:hint="@string/personal_id_hint"
-        android:inputType="text"
+        android:inputType="textCapCharacters|text"
+        android:textAllCaps="true"
+        android:textSize="18sp"
         android:padding="16dp"
         android:textColor="#b3ff99"
         android:textColorHint="#d4af37"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
+        app:layout_constraintTop_toTopOf="parent"  />
     <!-- Place of Birth Input -->
     <EditText
         android:id="@+id/editTextPlaceOfBirth"
@@ -48,9 +79,9 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:background="@drawable/edittext_background"
+        android:focusable="false"
         android:hint="Select Date"
         android:inputType="none"
-        android:focusable="false"
         android:padding="16dp"
         android:textColor="#b3ff99"
         android:textColorHint="#d4af37"

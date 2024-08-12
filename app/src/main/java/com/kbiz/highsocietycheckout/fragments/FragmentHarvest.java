@@ -246,16 +246,26 @@ public class FragmentHarvest extends Fragment implements NFCReactor {
         ((MainActivity) getContext()).runOnMainThread(() -> NavHostFragment.findNavController(FragmentHarvest.this).navigate(R.id.action_fragmentHarvest_to_fragmentScan));
 
     }
-
     private void handleAmountBtn(int amountToAdd) {
-        long newAvailAmount = harvestViewModel.getAvailAmount().getValue() - amountToAdd;
+        long currentAvailAmount = harvestViewModel.getAvailAmount().getValue();
+
+        // Check if there is enough available amount left
+        if (currentAvailAmount <= 0) {
+            // No weed available, stop further processing
+            return;
+        }
+
+        // Calculate new available amount
+        long newAvailAmount = currentAvailAmount - amountToAdd;
         newAvailAmount = Math.max(0, Math.min(newAvailAmount, 50));
         this.harvestViewModel.setAvailAmount(Math.toIntExact(newAvailAmount));
 
+        // Calculate new harvest amount
         int harvestAmount = this.harvestViewModel.getHarvestAmount().getValue() + amountToAdd;
         int newAmount = Math.max(0, Math.min(harvestAmount, 50));
         this.harvestViewModel.setHarvestAmount(newAmount);
     }
+
 
 
     public void handleNFCIntent(Intent intent) {

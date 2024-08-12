@@ -1,11 +1,14 @@
 - harvest
     - DONE fix amounting
     - DONE do checkout and create harvest db entry
+- reg
+    - DONE fix reg frag
 
 - data manager
     - DONE make email backup work
     - DONE display users/harvests
     - DONE add btn to erase user db
+    - make it harder to delete the db. send a backup before deleting
     - add filters
         - show users's harvests after tap on user entry
         - date interval: harvests cur month, last month, ytd
@@ -21,6 +24,7 @@
     -> show tag contents
     -> klick "erase" button
     -> wait for tag, then erase
+- DONE show confirmation after formatting and registration
 - add showing user hash after tag init and writing user to db
 - add toolbar btn to go to scan screen fast from everywhere
 

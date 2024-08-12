@@ -79,6 +79,8 @@ public class FragmentClearTag extends Fragment implements NFCReactor {
 
     private void clearTag(Tag tag) {
         try {
+//            SpinnerUtil.showSpinner(getParentFragmentManager());
+
             Ndef ndef = Ndef.get(tag);
             if (ndef == null) {
                 throw new RuntimeException("Cannot initialize NDEF on this tag");
@@ -115,11 +117,15 @@ public class FragmentClearTag extends Fragment implements NFCReactor {
             return;
         }
 
+        ((MainActivity) getContext()).runOnMainThread(() -> {
+            Bundle bundle = new Bundle();
+            bundle.putString("MSG", getString(R.string.tag_deleted));
+            bundle.putString("TARGET", "initTag");
+//            bundle.putString("DATA", "EMPTY");
+            NavHostFragment.findNavController(FragmentClearTag.this).navigate(R.id.action_fragmentClearTag_to_fragmentConfirm, bundle);
+        });
         statusViewModel.setStatusText("Navigating to Registration");
-        NavController ctrl = NavHostFragment.findNavController(FragmentClearTag.this);
-        ((MainActivity) getContext()).runOnMainThread(
 
-                () -> ctrl.navigate(R.id.action_fragmentClearTag_to_fragmentRegister));
     }
 
     @Override

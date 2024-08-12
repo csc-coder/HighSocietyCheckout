@@ -30,8 +30,11 @@ import com.kbiz.highsocietycheckout.nfc.NFCHandler;
 
 import java.util.Calendar;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 public class FragmentRegister extends Fragment {
+
+    private static final Pattern PERSONAL_ID_PATTERN = Pattern.compile("^[A-Z0-9]{9}$");
 
     public static final String LOK = "LOK_REG";
     public static final String HASH_PREFIX = "HIGH_SOCIETY_";
@@ -136,7 +139,13 @@ public class FragmentRegister extends Fragment {
         String dateOfBirth = editTextDate.getText().toString();
 
         if (personalID.isEmpty()) {
-            Toast.makeText(getContext(), "Please enter your ID number", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), R.string.please_enter_your_id_personalausweisnummer, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (    personalID.length()>15 ||
+                ! isValidPersonalAusweisID(personalID)) {
+            Toast.makeText(getContext(), R.string.please_enter_a_valid_id, Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -150,17 +159,25 @@ public class FragmentRegister extends Fragment {
             return;
         }
 
-//        Toast.makeText(getContext(), "Thx! (" + dob + "," + pob + "," + id + ")", Toast.LENGTH_SHORT).show();
+        //make registration string and hash it
         final String regData = dateOfBirth + "##" + placeOfBirth + "##" + personalID;
 
         final String hash = HASH_PREFIX + NFCHandler.createHash(regData);
-        Toast.makeText(getContext(), "Nice! Let's harvest :D", Toast.LENGTH_SHORT).show();
+        Toast.makeText(getContext(), "Let's init the Tag.", Toast.LENGTH_SHORT).show();
 
         ((MainActivity) getContext()).runOnMainThread(() -> {
             Bundle bundle = new Bundle();
             bundle.putString("regData", hash);
             NavHostFragment.findNavController(FragmentRegister.this).navigate(R.id.action_fragmentRegister_to_fragmentInitializeTag, bundle);
         });
+    }
+
+    public static boolean isValidPersonalAusweisID(String personalID) {
+        if (personalID == null || personalID.isEmpty()) {
+            return false;
+        }
+
+        return PERSONAL_ID_PATTERN.matcher(personalID).matches();
     }
 
     @Override

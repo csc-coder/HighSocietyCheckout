@@ -5,12 +5,14 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.kbiz.highsocietycheckout.MainActivity;
@@ -63,20 +65,20 @@ public class FragmentConfirm extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        view.findViewById(R.id.buttonRegOk).setOnClickListener(v -> {
-                    ((MainActivity) getContext()).runOnMainThread(() -> {
-                        if (this.target.equals("harvest")) {
-                            Log.d(LOK, "nav to '"+target+"' with msg: " + message + "'");
-                            Bundle bundle = new Bundle();
-                            bundle.putString("USER_HASH", data);
-                            NavHostFragment.findNavController(FragmentConfirm.this).navigate(R.id.action_fragmentConfirm_to_fragmentHarvest, bundle);
-                        } else {
-                            statusViewModel.setStatusText("unknown nav target in FragConfirm:" + R.id.action_fragmentConfirm_to_fragmentHarvest);
-                        }
-                    });
-                }
-        );
+        LinearLayout confirmationContainer = view.findViewById(R.id.confirmationContainer);
+        confirmationContainer.setOnClickListener(v -> {
+            if ("harvest".equals(target)) {
+                Bundle bundle = new Bundle();
+                bundle.putString("USER_HASH", data);
+                NavHostFragment.findNavController(FragmentConfirm.this).navigate(R.id.action_fragmentConfirm_to_fragmentHarvest, bundle);
+            } else if(this.target.equals("initTag")){
+                NavController ctrl = NavHostFragment.findNavController(FragmentConfirm.this);
+                ((MainActivity) getContext()).runOnMainThread(
+                        () -> ctrl.navigate(R.id.action_fragmentConfirm_to_fragmentRegister));
+            } else {
+                statusViewModel.setStatusText("Unknown nav target in FragmentConfirm: " + target);
+            }
+        });
 
         // Find the TextView by ID and set the text
         TextView txtMsg = view.findViewById(R.id.txtMsg);
